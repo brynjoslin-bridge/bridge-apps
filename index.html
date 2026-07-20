@@ -1,0 +1,736 @@
+https://docs.google.com/spreadsheets/d/1SaA33FZUbDLtIdV2_5clrDggOHYaFYzALbRcVXplp2E/edit?usp=sharing
+
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Coffee Morning &amp; Social Café Network</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <style>
+    :root{
+      /* Bridge brand palette */
+      --brand-teal: #3AABAA;
+      --deep-navy: #1D2048;
+      --warm-gold: #E8A023;
+      --deep-crimson: #8C1A4A;
+      --vivid-cobalt: #2B38BF;
+      --soft-cream: #F6F1EB;
+      --warm-cream: #F2EDE7;
+      --white: #FFFFFF;
+      --slate: #4A4A5A;
+      /* UI tokens */
+      --bg: var(--soft-cream);
+      --card: var(--white);
+      --text: var(--deep-navy);
+      --muted: var(--slate);
+      --accent: var(--brand-teal);
+      --line: rgba(29, 32, 72, .14);
+      --line-strong: rgba(29, 32, 72, .22);
+      --teal-soft: rgba(58, 171, 170, .14);
+      --gold-soft: rgba(232, 160, 35, .18);
+      --navy-soft: rgba(29, 32, 72, .08);
+      --shadow: 0 18px 42px rgba(29, 32, 72, .14);
+      --shadow-soft: 0 10px 24px rgba(29, 32, 72, .08);
+      --radius-lg: 28px;
+      --radius-md: 18px;
+      --radius-sm: 12px;
+    }
+    *{ box-sizing: border-box; }
+    body{
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: transparent;
+    }
+    .page{
+      position: relative;
+      isolation: isolate;
+      width: 100%;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 18px;
+      border-radius: 32px;
+      background:
+        radial-gradient(circle at 12% 6%, rgba(232, 160, 35, .22) 0 115px, transparent 116px),
+        radial-gradient(circle at 95% 4%, rgba(58, 171, 170, .22) 0 165px, transparent 166px),
+        linear-gradient(180deg, #FDFBF8 0%, var(--soft-cream) 100%);
+      border: 2px solid rgba(58, 171, 170, .7);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .page::before,
+    .page::after{
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      pointer-events: none;
+      z-index: -1;
+    }
+    .page::before{
+      width: 220px;
+      height: 220px;
+      right: -82px;
+      top: 116px;
+      border: 3px solid rgba(58, 171, 170, .24);
+    }
+    .page::after{
+      width: 96px;
+      height: 96px;
+      left: -36px;
+      bottom: 42px;
+      border: 2px solid rgba(232, 160, 35, .38);
+    }
+    .hero{
+      position: relative;
+      overflow: hidden;
+      background: var(--brand-teal);
+      color: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: clamp(22px, 4vw, 42px);
+      margin-bottom: 18px;
+    }
+    .hero::before,
+    .hero::after{
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      pointer-events: none;
+    }
+    .hero::before{
+      width: 190px;
+      height: 190px;
+      right: 28px;
+      top: -70px;
+      border: 3px solid rgba(255,255,255,.36);
+    }
+    .hero::after{
+      width: 118px;
+      height: 118px;
+      right: 72px;
+      top: -34px;
+      border: 1.5px solid rgba(255,255,255,.52);
+    }
+    .heroInner{
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+    }
+    .eyebrow{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.16);
+      border: 1px solid rgba(255,255,255,.35);
+      color: var(--white);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before{
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--warm-gold);
+      box-shadow: 0 0 0 4px rgba(232, 160, 35, .22);
+    }
+    h1, h2, h3, .name{
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    h1{
+      margin: 0;
+      max-width: 15ch;
+      font-size: clamp(30px, 5.4vw, 58px);
+      line-height: .98;
+      letter-spacing: -.045em;
+      font-weight: 800;
+    }
+    .scriptAccent{
+      display: block;
+      margin-top: 4px;
+      font-family: "Dancing Script", cursive;
+      font-size: clamp(34px, 5.4vw, 60px);
+      font-weight: 700;
+      line-height: .9;
+      letter-spacing: 0;
+      color: var(--warm-gold);
+    }
+    .intro{
+      margin: 18px 0 0;
+      max-width: 72ch;
+      color: rgba(255,255,255,.9);
+      font-size: 15px;
+      line-height: 1.65;
+      font-weight: 400;
+    }
+    .controls{
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1.4fr .8fr .8fr auto;
+      gap: 10px;
+      margin-top: 24px;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.22);
+      backdrop-filter: blur(8px);
+    }
+    input, select, button{
+      width: 100%;
+      min-height: 48px;
+      border: 1px solid rgba(255,255,255,.85);
+      border-radius: var(--radius-sm);
+      background: var(--white);
+      color: var(--deep-navy);
+      padding: 12px 13px;
+      font: inherit;
+      font-size: 14px;
+      outline: none;
+    }
+    input::placeholder{ color: rgba(74, 74, 90, .72); }
+    input:focus, select:focus{
+      border-color: var(--warm-gold);
+      box-shadow: 0 0 0 4px rgba(232, 160, 35, .24);
+    }
+    button{
+      background: var(--warm-gold);
+      border-color: var(--warm-gold);
+      color: var(--deep-navy);
+      font-weight: 700;
+      cursor: pointer;
+      transition: filter .15s ease;
+    }
+    button:hover{ filter: brightness(1.05); }
+    button:disabled{ opacity: .6; cursor: default; }
+    .meta{
+      position: relative;
+      z-index: 1;
+      margin-top: 13px;
+      color: rgba(255,255,255,.82);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    #map{
+      width: 100%;
+      height: 360px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-soft);
+      margin-top: 18px;
+      background: var(--navy-soft);
+    }
+    .leaflet-popup-content-wrapper{
+      border-radius: 14px;
+      font-family: "Poppins", system-ui, sans-serif;
+    }
+    .leaflet-popup-content{ font-size: 13px; line-height: 1.5; color: var(--deep-navy); }
+    .popupName{ font-weight: 700; font-size: 14px; margin: 0 0 4px; color: var(--deep-navy); }
+    .popupMeta{ margin: 0 0 2px; color: var(--slate); }
+    .grid{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .person{
+      background: rgba(255,255,255,.92);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      backdrop-filter: blur(5px);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .person:hover{
+      transform: translateY(-2px);
+      border-color: rgba(58, 171, 170, .45);
+      box-shadow: 0 16px 34px rgba(29, 32, 72, .14);
+    }
+    .personTop{
+      display: flex;
+      gap: 14px;
+      padding: 16px 16px 12px;
+      align-items: center;
+    }
+    .badge{
+      width: 74px;
+      height: 74px;
+      border-radius: 999px;
+      border: 3px solid var(--white);
+      outline: 2px solid rgba(58, 171, 170, .35);
+      background: linear-gradient(135deg, var(--deep-navy), var(--brand-teal));
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 13px;
+      text-align: center;
+      line-height: 1.1;
+      box-shadow: 0 6px 16px rgba(29, 32, 72, .18);
+      flex: 0 0 auto;
+    }
+    .name{
+      margin: 0;
+      color: var(--deep-navy);
+      font-size: 18px;
+      line-height: 1.2;
+      letter-spacing: -.018em;
+      font-weight: 700;
+    }
+    .role{
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      font-weight: 400;
+    }
+    .distance{
+      display: inline-block;
+      margin-top: 6px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--gold-soft);
+      color: var(--deep-navy);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .body{
+      padding: 0 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+    .org{
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--brand-teal);
+    }
+    .bio{
+      margin: 0;
+      color: var(--slate);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .chips{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: auto;
+    }
+    .chip{
+      border: 1px solid rgba(58, 171, 170, .28);
+      background: var(--teal-soft);
+      color: var(--deep-navy);
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .contact{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 2px;
+    }
+    .contact a{
+      text-decoration: none;
+      color: var(--deep-navy);
+      background: var(--white);
+      border: 1px solid var(--line-strong);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      transition: background .18s ease, color .18s ease, border-color .18s ease;
+    }
+    .contact a:hover,
+    .contact a:focus-visible{
+      border-color: var(--brand-teal);
+      background: var(--brand-teal);
+      color: var(--white);
+    }
+    .empty, .status{
+      text-align: center;
+      color: var(--muted);
+      padding: 22px;
+      background: rgba(255,255,255,.78);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      margin-top: 18px;
+    }
+    @media (prefers-reduced-motion: reduce){
+      *, *::before, *::after{
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .controls{ grid-template-columns: 1fr 1fr; }
+      h1{ max-width: 100%; }
+    }
+    @media (max-width: 560px){
+      .page{
+        padding: 12px;
+        border-radius: 24px;
+      }
+      .hero{
+        padding: 22px 18px;
+        border-radius: 22px;
+      }
+      .controls{ grid-template-columns: 1fr; }
+      .grid{ grid-template-columns: 1fr; }
+      .personTop{ align-items: flex-start; }
+      .badge{ width: 68px; height: 68px; }
+      #map{ height: 300px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="heroInner">
+        <div class="eyebrow">Lincoln North Rural</div>
+        <h1>Find a coffee morning <span class="scriptAccent">near you</span></h1>
+        <p class="intro">
+          A directory of coffee mornings, luncheon clubs and friendship groups across Lincoln North Rural.
+          Enter a postcode and a distance to see what's nearby, or browse everything below.
+        </p>
+      </div>
+      <div class="controls">
+        <input id="postcode" type="text" placeholder="Enter a postcode, e.g. LN2 2LB" aria-label="Postcode" autocomplete="off" />
+        <select id="radius" aria-label="Search radius">
+          <option value="1">Within 1 mile</option>
+          <option value="3" selected>Within 3 miles</option>
+          <option value="5">Within 5 miles</option>
+          <option value="10">Within 10 miles</option>
+          <option value="20">Within 20 miles</option>
+        </select>
+        <select id="categoryFilter" aria-label="Filter by type">
+          <option value="">All types</option>
+        </select>
+        <button id="searchBtn" type="button">Search</button>
+      </div>
+      <div id="meta" class="meta">Loading directory...</div>
+    </section>
+    <div id="map"></div>
+    <section id="directory" class="grid" aria-label="Coffee morning directory"></section>
+    <div id="status" class="status" hidden></div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script>
+    // ---- Configuration: update these two values for your sheet ----
+    const SHEET_ID = "1SaA33FZUbDLtIdV2_5clrDggOHYaFYzALbRcVXplp2E";
+    // Tab name inside the Google Sheet. Must match the "Map Data (Confirmed)" tab exactly,
+    // or whatever you rename it to once it's a live Google Sheet (not the .xlsx file).
+    const SHEET_NAME = "Sheet1";
+    const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+
+    // Default map view: centred roughly on Lincoln North Rural, zoomed out to show all clusters.
+    const DEFAULT_CENTER = [53.29, -0.55];
+    const DEFAULT_ZOOM = 11;
+
+    const directoryEl = document.getElementById("directory");
+    const statusEl = document.getElementById("status");
+    const metaEl = document.getElementById("meta");
+    const postcodeEl = document.getElementById("postcode");
+    const radiusEl = document.getElementById("radius");
+    const categoryFilterEl = document.getElementById("categoryFilter");
+    const searchBtn = document.getElementById("searchBtn");
+
+    let groups = [];
+    let searchOrigin = null; // { lat, lng } of the searched postcode, or null
+
+    const map = L.map("map", { scrollWheelZoom: false }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 18
+    }).addTo(map);
+    let markerLayer = L.layerGroup().addTo(map);
+    let searchMarker = null;
+
+    function parseCSV(text){
+      const rows = [];
+      let row = [];
+      let cell = "";
+      let inQuotes = false;
+      for (let i = 0; i < text.length; i++){
+        const c = text[i];
+        const next = text[i + 1];
+        if (c === '"'){
+          if (inQuotes && next === '"'){
+            cell += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+          continue;
+        }
+        if (!inQuotes && c === ","){
+          row.push(cell);
+          cell = "";
+          continue;
+        }
+        if (!inQuotes && (c === "\n" || c === "\r")){
+          if (c === "\r" && next === "\n") i++;
+          row.push(cell);
+          cell = "";
+          if (row.some(value => value.trim() !== "")) rows.push(row);
+          row = [];
+          continue;
+        }
+        cell += c;
+      }
+      row.push(cell);
+      if (row.some(value => value.trim() !== "")) rows.push(row);
+      return rows;
+    }
+    function normalise(value){
+      return String(value || "").trim();
+    }
+    function safeUrl(url){
+      const value = normalise(url);
+      if (!value) return "";
+      const withScheme = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+      try{
+        const u = new URL(withScheme);
+        if (u.protocol === "http:" || u.protocol === "https:") return withScheme;
+      } catch {}
+      return "";
+    }
+    function mailto(email){
+      const value = normalise(email);
+      if (!value || !value.includes("@")) return "";
+      return `mailto:${value}`;
+    }
+    function tel(phone){
+      const value = normalise(phone);
+      if (!value) return "";
+      return `tel:${value.replace(/[^0-9+]/g, "")}`;
+    }
+    function escapeHtml(value){
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+    function makeObjectRows(rows){
+      if (!rows.length) return [];
+      const headers = rows[0].map(h => normalise(h));
+      return rows.slice(1).map(row => {
+        const obj = {};
+        headers.forEach((header, index) => {
+          obj[header] = normalise(row[index]);
+        });
+        return obj;
+      });
+    }
+    function badgeText(name){
+      return normalise(name)
+        .split(/\s+/)
+        .slice(0, 2)
+        .map(part => part[0] || "")
+        .join("")
+        .toUpperCase() || "?";
+    }
+    // Haversine distance in miles between two lat/lng points.
+    function milesBetween(lat1, lon1, lat2, lon2){
+      const R = 3958.8; // Earth radius in miles
+      const toRad = deg => (deg * Math.PI) / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2 +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+    async function geocodePostcode(postcode){
+      const clean = normalise(postcode).replace(/\s+/g, "");
+      if (!clean) return null;
+      const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(clean)}`);
+      if (!res.ok) return null;
+      const json = await res.json();
+      if (json.status !== 200 || !json.result) return null;
+      return { lat: json.result.latitude, lng: json.result.longitude };
+    }
+    function populateFilters(data){
+      categoryFilterEl.length = 1;
+      const categories = [...new Set(data.map(g => g.category).filter(Boolean))].sort();
+      for (const category of categories){
+        const option = document.createElement("option");
+        option.value = category;
+        option.textContent = category;
+        categoryFilterEl.appendChild(option);
+      }
+    }
+    function withDistance(list){
+      if (!searchOrigin) return list.map(g => ({ ...g, _distance: null }));
+      return list.map(g => {
+        const lat = Number(g.latitude);
+        const lng = Number(g.longitude);
+        const distance = Number.isFinite(lat) && Number.isFinite(lng)
+          ? milesBetween(searchOrigin.lat, searchOrigin.lng, lat, lng)
+          : null;
+        return { ...g, _distance: distance };
+      });
+    }
+    function render(){
+      const category = categoryFilterEl.value;
+      const radius = Number(radiusEl.value);
+      let list = withDistance(groups);
+      list = list.filter(g => !category || g.category === category);
+      if (searchOrigin){
+        list = list.filter(g => g._distance !== null && g._distance <= radius);
+        list.sort((a, b) => a._distance - b._distance);
+      } else {
+        list.sort((a, b) => normalise(a.name).localeCompare(normalise(b.name)));
+      }
+
+      // Map markers
+      markerLayer.clearLayers();
+      const bounds = [];
+      for (const g of list){
+        const lat = Number(g.latitude);
+        const lng = Number(g.longitude);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+        const popupHtml = `
+          <p class="popupName">${escapeHtml(g.name)}</p>
+          <p class="popupMeta">${escapeHtml([g.day, g.time].filter(Boolean).join(" · "))}</p>
+          <p class="popupMeta">${escapeHtml(g.address)}</p>
+        `;
+        L.marker([lat, lng]).bindPopup(popupHtml).addTo(markerLayer);
+        bounds.push([lat, lng]);
+      }
+      if (searchOrigin){
+        if (searchMarker) map.removeLayer(searchMarker);
+        searchMarker = L.circleMarker([searchOrigin.lat, searchOrigin.lng], {
+          radius: 8, color: "#E8A023", fillColor: "#E8A023", fillOpacity: 1, weight: 2
+        }).addTo(map).bindPopup("Your search postcode");
+        bounds.push([searchOrigin.lat, searchOrigin.lng]);
+      }
+      if (bounds.length){
+        map.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
+      } else {
+        map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+      }
+
+      // Cards
+      directoryEl.innerHTML = "";
+      if (!list.length){
+        directoryEl.innerHTML = `<div class="empty">No groups match those filters. Try a wider radius, or clear the postcode to browse everything.</div>`;
+        metaEl.textContent = `Showing 0 of ${groups.length} groups`;
+        return;
+      }
+      for (const g of list){
+        const contactLinks = [];
+        const emailHref = mailto(g.email);
+        if (emailHref) contactLinks.push(`<a href="${escapeHtml(emailHref)}">Email</a>`);
+        const phoneHref = tel(g.phone);
+        if (phoneHref) contactLinks.push(`<a href="${escapeHtml(phoneHref)}">Phone</a>`);
+        const website = safeUrl(g.website);
+        if (website) contactLinks.push(`<a href="${escapeHtml(website)}" target="_blank" rel="noopener">Website</a>`);
+
+        const detailLine = [g.day, g.time].filter(Boolean).join(" · ");
+        const distanceHtml = g._distance !== null
+          ? `<span class="distance">${g._distance.toFixed(1)} miles away</span>`
+          : "";
+        const card = document.createElement("article");
+        card.className = "person";
+        card.innerHTML = `
+          <div class="personTop">
+            <div class="badge" aria-hidden="true">${escapeHtml(badgeText(g.name))}</div>
+            <div>
+              <h2 class="name">${escapeHtml(g.name)}</h2>
+              ${detailLine ? `<p class="role">${escapeHtml(detailLine)}</p>` : ""}
+              ${distanceHtml}
+            </div>
+          </div>
+          <div class="body">
+            <div>
+              ${g.village ? `<div class="org">${escapeHtml(g.village)}</div>` : ""}
+              ${g.address ? `<p class="bio">${escapeHtml(g.address)}</p>` : ""}
+            </div>
+            ${g.cost ? `<div class="chips"><span class="chip">${escapeHtml(g.cost)}</span>${g.category ? `<span class="chip">${escapeHtml(g.category)}</span>` : ""}</div>` : (g.category ? `<div class="chips"><span class="chip">${escapeHtml(g.category)}</span></div>` : "")}
+            ${contactLinks.length ? `<div class="contact">${contactLinks.join("")}</div>` : ""}
+          </div>
+        `;
+        directoryEl.appendChild(card);
+      }
+      metaEl.textContent = searchOrigin
+        ? `Showing ${list.length} of ${groups.length} groups within ${radius} miles`
+        : `Showing all ${list.length} groups`;
+    }
+    async function runSearch(){
+      const postcode = postcodeEl.value.trim();
+      if (!postcode){
+        searchOrigin = null;
+        render();
+        return;
+      }
+      searchBtn.disabled = true;
+      searchBtn.textContent = "Searching...";
+      statusEl.hidden = true;
+      try{
+        const point = await geocodePostcode(postcode);
+        if (!point){
+          statusEl.hidden = false;
+          statusEl.textContent = "Couldn't find that postcode. Check it's a valid UK postcode and try again.";
+          searchOrigin = null;
+        } else {
+          searchOrigin = point;
+        }
+        render();
+      } catch (err){
+        console.error(err);
+        statusEl.hidden = false;
+        statusEl.textContent = "Something went wrong looking up that postcode. Please try again.";
+      } finally {
+        searchBtn.disabled = false;
+        searchBtn.textContent = "Search";
+      }
+    }
+    async function loadDirectory(){
+      try{
+        const res = await fetch(CSV_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+        const csv = await res.text();
+        const rows = parseCSV(csv);
+        groups = makeObjectRows(rows);
+        populateFilters(groups);
+        render();
+      } catch (err){
+        console.error(err);
+        metaEl.textContent = "Could not load the directory.";
+        statusEl.hidden = false;
+        statusEl.textContent = "Check that the Google Sheet is published to the web, the Sheet ID is correct, and the tab name is exactly right.";
+      }
+    }
+    searchBtn.addEventListener("click", runSearch);
+    postcodeEl.addEventListener("keydown", (e) => { if (e.key === "Enter") runSearch(); });
+    radiusEl.addEventListener("change", () => { if (searchOrigin) render(); });
+    categoryFilterEl.addEventListener("change", render);
+    loadDirectory();
+  </script>
+</body>
+</html>
