@@ -205,6 +205,728 @@
       position: relative;
       z-index: 1;
       display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-top: 14px;
+      padding: 10px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.22);
+      backdrop-filter: blur(8px);
+      align-items: stretch;
+    }
+    input, select, button{
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid rgba(255,255,255,.85);
+      border-radius: var(--radius-sm);
+      background: var(--white);
+      color: var(--deep-navy);
+      padding: 9px 12px;
+      font: inherit;
+      font-size: 13px;
+      outline: none;
+    }
+    input::placeholder{ color: rgba(74, 74, 90, .72); }
+    input:focus, select:focus{
+      border-color: var(--warm-gold);
+      box-shadow: 0 0 0 4px rgba(232, 160, 35, .24);
+    }
+    button{
+      background: var(--warm-gold);
+      border-color: var(--warm-gold);
+      color: var(--deep-navy);
+      font-weight: 700;
+      cursor: pointer;
+      transition: filter .15s ease;
+    }
+    button:hover{ filter: brightness(1.05); }
+    button:disabled{ opacity: .6; cursor: default; }
+    .checkField{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--white);
+      border: 1px solid rgba(255,255,255,.85);
+      border-radius: var(--radius-sm);
+      padding: 9px 12px;
+      min-height: 40px;
+      white-space: nowrap;
+    }
+    .checkField input[type="checkbox"]{
+      width: 16px;
+      height: 16px;
+      min-height: 0;
+      flex: 0 0 auto;
+      accent-color: var(--brand-teal);
+    }
+    .checkField label{
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--deep-navy);
+      cursor: pointer;
+    }
+    .metaRow{
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .meta{
+      color: rgba(255,255,255,.82);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .copyLinkBtn{
+      width: auto;
+      min-height: 0;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.55);
+      color: var(--white);
+      padding: 7px 13px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background .15s ease, border-color .15s ease;
+    }
+    .copyLinkBtn:hover{
+      background: rgba(255,255,255,.16);
+      border-color: rgba(255,255,255,.85);
+    }
+    .copyLinkBtn.copied{
+      background: var(--warm-gold);
+      border-color: var(--warm-gold);
+      color: var(--deep-navy);
+    }
+    #map{
+      width: 100%;
+      height: 360px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-soft);
+      margin-top: 18px;
+      background: var(--navy-soft);
+    }
+    .leaflet-popup-content-wrapper{
+      border-radius: 14px;
+      font-family: "Poppins", system-ui, sans-serif;
+    }
+    .leaflet-popup-content{ font-size: 13px; line-height: 1.5; color: var(--deep-navy); }
+    .popupName{ font-weight: 700; font-size: 14px; margin: 0 0 4px; color: var(--deep-navy); }
+    .popupMeta{ margin: 0 0 2px; color: var(--slate); }
+    .popupLink{ display: inline-block; margin-top: 4px; font-weight: 700; color: var(--brand-teal); text-decoration: none; }
+    .popupLink:hover{ text-decoration: underline; }
+    .grid{
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .person{
+      background: rgba(255,255,255,.92);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      backdrop-filter: blur(5px);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .person:hover{
+      transform: translateY(-2px);
+      border-color: rgba(58, 171, 170, .45);
+      box-shadow: 0 16px 34px rgba(29, 32, 72, .14);
+    }
+    .personTop{
+      padding: 16px 16px 12px;
+    }
+    .name{
+      margin: 0;
+      color: var(--deep-navy);
+      font-size: 18px;
+      line-height: 1.2;
+      letter-spacing: -.018em;
+      font-weight: 700;
+    }
+    .role{
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      font-weight: 400;
+    }
+    .body{
+      padding: 0 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+    .org{
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--brand-teal);
+    }
+    .bio{
+      margin: 0;
+      color: var(--slate);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .chips{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: auto;
+    }
+    .chip{
+      border: 1px solid rgba(58, 171, 170, .28);
+      background: var(--teal-soft);
+      color: var(--deep-navy);
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .chip.halal{
+      border-color: rgba(232, 160, 35, .5);
+      background: var(--gold-soft);
+    }
+    .chip.kosher{
+      border-color: rgba(43, 56, 191, .35);
+      background: rgba(43, 56, 191, .12);
+    }
+    .contact{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 2px;
+    }
+    .contact a{
+      text-decoration: none;
+      color: var(--deep-navy);
+      background: var(--white);
+      border: 1px solid var(--line-strong);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      transition: background .18s ease, color .18s ease, border-color .18s ease;
+    }
+    .contact a:hover,
+    .contact a:focus-visible{
+      border-color: var(--brand-teal);
+      background: var(--brand-teal);
+      color: var(--white);
+    }
+    .contact a.directions{
+      border-color: var(--brand-teal);
+      background: var(--teal-soft);
+      color: var(--brand-teal);
+    }
+    .contact a.directions:hover,
+    .contact a.directions:focus-visible{
+      background: var(--brand-teal);
+      color: var(--white);
+    }
+    .empty, .status{
+      text-align: center;
+      color: var(--muted);
+      padding: 22px;
+      background: rgba(255,255,255,.78);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      margin-top: 18px;
+    }
+    @media (prefers-reduced-motion: reduce){
+      *, *::before, *::after{
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      h1{ max-width: 100%; }
+    }
+    @media (max-width: 560px){
+      .page{
+        padding: 12px 12px 32px;
+      }
+      .hero{
+        padding: 22px 18px;
+        border-radius: 22px;
+      }
+      .topBar{ justify-content: stretch; }
+      .backBtn{ width: 100%; justify-content: center; }
+      .metaRow{ flex-direction: column; align-items: stretch; }
+      .copyLinkBtn{ width: 100%; }
+      .controls{ grid-template-columns: 1fr; }
+      .grid{ grid-template-columns: 1fr; }
+      #map{ height: 300px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="topBar">
+      <a class="backBtn" href="https://sites.google.com/wearebridge.org/lincolnnorthrural/home" target="_top" rel="noopener">
+        &larr; Back to Partnership Board
+      </a>
+    </div>
+    <section class="hero">
+      <div class="heroInner">
+        <div class="eyebrow">Community Connectors</div>
+        <h1>Find international food <span class="scriptAccent">near you</span></h1>
+        <p class="intro">
+          A directory of international, halal and speciality food shops near the University of Lincoln's
+          Brayford Pool campus. Browse everything below, filter by type, and tap a shop to get directions.
+        </p>
+      </div>
+      <div class="controls">
+        <select id="categoryFilter" aria-label="Filter by type">
+          <option value="">All types</option>
+        </select>
+        <div class="checkField">
+          <input type="checkbox" id="halalOnly" />
+          <label for="halalOnly">Halal only</label>
+        </div>
+      </div>
+      <div class="metaRow">
+        <div id="meta" class="meta">Loading directory...</div>
+        <button id="copyLinkBtn" class="copyLinkBtn" type="button">Copy link to this view</button>
+      </div>
+    </section>
+    <div id="map"></div>
+    <section id="directory" class="grid" aria-label="International food shop directory"></section>
+    <div id="status" class="status" hidden></div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script>
+    // ---- Configuration: update these two values for your sheet ----
+    const SHEET_ID = "1KLXNTk9cCJ4G6d7jUR_DOjMe2hu63kI0TA1SX59fWA0";
+    // Tab name inside the Google Sheet. Must match the tab you import international_food_shops.csv into.
+    const SHEET_NAME = "Sheet1";
+    const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+
+    // Default map view: centred on the High Street / Brayford Pool cluster in Lincoln.
+    const DEFAULT_CENTER = [53.2225, -0.5455];
+    const DEFAULT_ZOOM = 14;
+
+    const directoryEl = document.getElementById("directory");
+    const statusEl = document.getElementById("status");
+    const metaEl = document.getElementById("meta");
+    const categoryFilterEl = document.getElementById("categoryFilter");
+    const halalOnlyEl = document.getElementById("halalOnly");
+    const copyLinkBtn = document.getElementById("copyLinkBtn");
+
+    let shops = [];
+
+    // ---- Shareable URL support ----
+    // Reads/writes ?category=...&halal=1 so a specific filtered view can be
+    // copied and sent as a link. Works when this page is opened directly
+    // (e.g. a hosted URL); a Google Sites Embed loads this in an iframe, so
+    // the browser's own address bar won't reflect it there - the Copy Link
+    // button always builds the link from this page's own URL, which is what
+    // you'd share instead of the Sites page link.
+    function paramsFromControls(){
+      const params = new URLSearchParams();
+      if (categoryFilterEl.value) params.set("category", categoryFilterEl.value);
+      if (halalOnlyEl.checked) params.set("halal", "1");
+      return params;
+    }
+    function updateUrl(){
+      const query = paramsFromControls().toString();
+      const newUrl = `${window.location.pathname}${query ? "?" + query : ""}${window.location.hash}`;
+      window.history.replaceState({}, "", newUrl);
+    }
+    function applyParamsFromUrl(){
+      const params = new URLSearchParams(window.location.search);
+      const category = params.get("category");
+      const halal = params.get("halal");
+      if (category && [...categoryFilterEl.options].some(o => o.value === category)){
+        categoryFilterEl.value = category;
+      }
+      if (halal === "1") halalOnlyEl.checked = true;
+    }
+    async function copyShareLink(){
+      updateUrl();
+      const link = window.location.href;
+      const showCopied = () => {
+        copyLinkBtn.textContent = "Link copied!";
+        copyLinkBtn.classList.add("copied");
+        setTimeout(() => {
+          copyLinkBtn.textContent = "Copy link to this view";
+          copyLinkBtn.classList.remove("copied");
+        }, 2000);
+      };
+      try{
+        await navigator.clipboard.writeText(link);
+        showCopied();
+      } catch {
+        // Clipboard API can be blocked inside an iframe - fall back to a
+        // temporary text field and the older copy command.
+        const temp = document.createElement("input");
+        temp.value = link;
+        document.body.appendChild(temp);
+        temp.select();
+        try{ document.execCommand("copy"); showCopied(); }
+        catch { window.prompt("Copy this link:", link); }
+        document.body.removeChild(temp);
+      }
+    }
+
+    const map = L.map("map", { scrollWheelZoom: false }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 18
+    }).addTo(map);
+    let markerLayer = L.layerGroup().addTo(map);
+
+    function parseCSV(text){
+      const rows = [];
+      let row = [];
+      let cell = "";
+      let inQuotes = false;
+      for (let i = 0; i < text.length; i++){
+        const c = text[i];
+        const next = text[i + 1];
+        if (c === '"'){
+          if (inQuotes && next === '"'){
+            cell += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+          continue;
+        }
+        if (!inQuotes && c === ","){
+          row.push(cell);
+          cell = "";
+          continue;
+        }
+        if (!inQuotes && (c === "\n" || c === "\r")){
+          if (c === "\r" && next === "\n") i++;
+          row.push(cell);
+          cell = "";
+          if (row.some(value => value.trim() !== "")) rows.push(row);
+          row = [];
+          continue;
+        }
+        cell += c;
+      }
+      row.push(cell);
+      if (row.some(value => value.trim() !== "")) rows.push(row);
+      return rows;
+    }
+    function normalise(value){
+      return String(value || "").trim();
+    }
+    function isYes(value){
+      const v = normalise(value).toLowerCase();
+      return v === "yes" || v === "y" || v === "true";
+    }
+    function safeUrl(url){
+      const value = normalise(url);
+      if (!value) return "";
+      const withScheme = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+      try{
+        const u = new URL(withScheme);
+        if (u.protocol === "http:" || u.protocol === "https:") return withScheme;
+      } catch {}
+      return "";
+    }
+    function mailto(email){
+      const value = normalise(email);
+      if (!value || !value.includes("@")) return "";
+      return `mailto:${value}`;
+    }
+    function tel(phone){
+      const value = normalise(phone);
+      if (!value) return "";
+      return `tel:${value.replace(/[^0-9+]/g, "")}`;
+    }
+    // Google Maps directions link. Uses lat/lng from the sheet as the
+    // destination (most reliable); falls back to the address text if no
+    // coordinates are present.
+    function directionsUrl(g){
+      const lat = Number(g.latitude);
+      const lng = Number(g.longitude);
+      if (Number.isFinite(lat) && Number.isFinite(lng)){
+        return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+      }
+      const addr = [g.address, g.postcode, "Lincoln, UK"].filter(Boolean).join(", ");
+      if (!addr) return "";
+      return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(addr)}`;
+    }
+    function escapeHtml(value){
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+    function makeObjectRows(rows){
+      if (!rows.length) return [];
+      const headers = rows[0].map(h => normalise(h));
+      return rows.slice(1).map(row => {
+        const obj = {};
+        headers.forEach((header, index) => {
+          obj[header] = normalise(row[index]);
+        });
+        return obj;
+      });
+    }
+    function populateFilters(data){
+      categoryFilterEl.length = 1;
+      const categories = [...new Set(data.map(g => g.category).filter(Boolean))].sort();
+      for (const category of categories){
+        const option = document.createElement("option");
+        option.value = category;
+        option.textContent = category;
+        categoryFilterEl.appendChild(option);
+      }
+    }
+    function render(){
+      const category = categoryFilterEl.value;
+      const halalOnly = halalOnlyEl.checked;
+      let list = shops.filter(g => !category || g.category === category);
+      if (halalOnly) list = list.filter(g => isYes(g.halal));
+      list.sort((a, b) => normalise(a.name).localeCompare(normalise(b.name)));
+
+      // Map markers
+      markerLayer.clearLayers();
+      const bounds = [];
+      for (const g of list){
+        const lat = Number(g.latitude);
+        const lng = Number(g.longitude);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+        const dirLink = directionsUrl(g);
+        const popupHtml = `
+          <p class="popupName">${escapeHtml(g.name)}</p>
+          <p class="popupMeta">${escapeHtml(g.category)}</p>
+          <p class="popupMeta">${escapeHtml([g.address, g.postcode].filter(Boolean).join(", "))}</p>
+          <p class="popupMeta">${escapeHtml(g.opening_hours)}</p>
+          ${dirLink ? `<a class="popupLink" href="${escapeHtml(dirLink)}" target="_blank" rel="noopener">Get directions &rarr;</a>` : ""}
+        `;
+        L.marker([lat, lng]).bindPopup(popupHtml).addTo(markerLayer);
+        bounds.push([lat, lng]);
+      }
+      if (bounds.length){
+        map.fitBounds(bounds, { padding: [30, 30], maxZoom: 16 });
+      } else {
+        map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+      }
+
+      // Cards
+      directoryEl.innerHTML = "";
+      if (!list.length){
+        directoryEl.innerHTML = `<div class="empty">No shops match those filters. Try clearing "Halal only" or the type filter.</div>`;
+        metaEl.textContent = `Showing 0 of ${shops.length} shops`;
+        return;
+      }
+      for (const g of list){
+        const contactLinks = [];
+        const emailHref = mailto(g.email);
+        if (emailHref) contactLinks.push(`<a href="${escapeHtml(emailHref)}">Email</a>`);
+        const phoneHref = tel(g.phone);
+        if (phoneHref) contactLinks.push(`<a href="${escapeHtml(phoneHref)}">Phone</a>`);
+        const website = safeUrl(g.website);
+        if (website) contactLinks.push(`<a href="${escapeHtml(website)}" target="_blank" rel="noopener">Website</a>`);
+        const dirLink = directionsUrl(g);
+        if (dirLink) contactLinks.push(`<a class="directions" href="${escapeHtml(dirLink)}" target="_blank" rel="noopener">Directions</a>`);
+
+        const addressLine = [g.address, g.postcode].filter(Boolean).join(", ");
+
+        const chips = [];
+        if (g.category) chips.push(`<span class="chip">${escapeHtml(g.category)}</span>`);
+        if (isYes(g.halal)) chips.push(`<span class="chip halal">Halal</span>`);
+        if (g.kosher && !/^no$/i.test(normalise(g.kosher))) chips.push(`<span class="chip kosher">Kosher: ${escapeHtml(g.kosher)}</span>`);
+
+        const card = document.createElement("article");
+        card.className = "person";
+        card.innerHTML = `
+          <div class="personTop">
+            <h2 class="name">${escapeHtml(g.name)}</h2>
+            ${g.opening_hours ? `<p class="role">${escapeHtml(g.opening_hours)}</p>` : ""}
+          </div>
+          <div class="body">
+            <div>
+              ${addressLine ? `<div class="org">${escapeHtml(addressLine)}</div>` : ""}
+              ${g.description ? `<p class="bio">${escapeHtml(g.description)}</p>` : ""}
+            </div>
+            ${chips.length ? `<div class="chips">${chips.join("")}</div>` : ""}
+            ${contactLinks.length ? `<div class="contact">${contactLinks.join("")}</div>` : ""}
+          </div>
+        `;
+        directoryEl.appendChild(card);
+      }
+      metaEl.textContent = `Showing ${list.length} of ${shops.length} shops`;
+    }
+    async function loadDirectory(){
+      try{
+        const res = await fetch(CSV_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+        const csv = await res.text();
+        const rows = parseCSV(csv);
+        shops = makeObjectRows(rows);
+        populateFilters(shops);
+        // Pre-fill from a shared link (?category=...&halal=1). Needs the
+        // <select> options to exist first, hence this runs after populateFilters().
+        applyParamsFromUrl();
+        render();
+      } catch (err){
+        console.error(err);
+        metaEl.textContent = "Could not load the directory.";
+        statusEl.hidden = false;
+        statusEl.textContent = "Check that the Google Sheet is published to the web, the Sheet ID is correct, and the tab name is exactly right.";
+      }
+    }
+    categoryFilterEl.addEventListener("change", () => { render(); updateUrl(); });
+    halalOnlyEl.addEventListener("change", () => { render(); updateUrl(); });
+    copyLinkBtn.addEventListener("click", copyShareLink);
+    loadDirectory();
+  </script>
+</body>
+</html>
+    }
+    .page::after{
+      width: 96px;
+      height: 96px;
+      left: -36px;
+      bottom: 42px;
+      border: 2px solid rgba(232, 160, 35, .38);
+    }
+    .topBar{
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 8px;
+    }
+    .backBtn{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      background: var(--white);
+      color: var(--deep-navy);
+      border: 1px solid var(--line-strong);
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: var(--shadow-soft);
+      transition: background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
+    }
+    .backBtn:hover,
+    .backBtn:focus-visible{
+      background: var(--brand-teal);
+      color: var(--white);
+      border-color: var(--brand-teal);
+      transform: translateY(-1px);
+    }
+    .hero{
+      position: relative;
+      overflow: hidden;
+      background: var(--brand-teal);
+      color: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: clamp(14px, 2vw, 22px) clamp(18px, 3vw, 32px);
+      margin-bottom: 14px;
+    }
+    .hero::before,
+    .hero::after{
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      pointer-events: none;
+    }
+    .hero::before{
+      width: 190px;
+      height: 190px;
+      right: 28px;
+      top: -70px;
+      border: 3px solid rgba(255,255,255,.36);
+    }
+    .hero::after{
+      width: 118px;
+      height: 118px;
+      right: 72px;
+      top: -34px;
+      border: 1.5px solid rgba(255,255,255,.52);
+    }
+    .heroInner{
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+    }
+    .eyebrow{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.16);
+      border: 1px solid rgba(255,255,255,.35);
+      color: var(--white);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before{
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--warm-gold);
+      box-shadow: 0 0 0 4px rgba(232, 160, 35, .22);
+    }
+    h1, h2, h3, .name{
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    h1{
+      margin: 0;
+      max-width: 26ch;
+      font-size: clamp(22px, 3vw, 34px);
+      line-height: 1.02;
+      letter-spacing: -.03em;
+      font-weight: 800;
+      display: inline;
+    }
+    .scriptAccent{
+      display: inline;
+      margin-left: 8px;
+      font-family: "Dancing Script", cursive;
+      font-size: clamp(24px, 3.4vw, 36px);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0;
+      color: var(--warm-gold);
+    }
+    .intro{
+      margin: 8px 0 0;
+      max-width: 72ch;
+      color: rgba(255,255,255,.9);
+      font-size: 13px;
+      line-height: 1.5;
+      font-weight: 400;
+    }
+    .controls{
+      position: relative;
+      z-index: 1;
+      display: grid;
       grid-template-columns: 1.3fr .8fr 1fr .8fr auto;
       gap: 10px;
       margin-top: 14px;
