@@ -85,32 +85,35 @@
       bottom: 42px;
       border: 2px solid rgba(232, 160, 35, .38);
     }
-    .topBar{
+    .layout{
       display: flex;
-      justify-content: flex-end;
-      margin-bottom: 8px;
+      align-items: flex-start;
+      gap: 20px;
     }
-    .backBtn{
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      text-decoration: none;
-      background: var(--white);
-      color: var(--deep-navy);
-      border: 1px solid var(--line-strong);
-      padding: 10px 16px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
-      box-shadow: var(--shadow-soft);
-      transition: background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
+    .sidebar{
+      flex: 0 0 420px;
+      width: 420px;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 12px;
+      align-self: flex-start;
+      max-height: calc(100vh - 24px);
     }
-    .backBtn:hover,
-    .backBtn:focus-visible{
-      background: var(--brand-teal);
-      color: var(--white);
-      border-color: var(--brand-teal);
-      transform: translateY(-1px);
+    .sidebarScroll{
+      overflow-y: auto;
+      padding-right: 6px;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    .mapCol{
+      flex: 1 1 auto;
+      min-width: 0;
+      position: sticky;
+      top: 12px;
+      align-self: flex-start;
+      height: calc(100vh - 24px);
     }
     .hero{
       position: relative;
@@ -305,11 +308,10 @@
     }
     #map{
       width: 100%;
-      height: 360px;
+      height: 100%;
       border-radius: var(--radius-md);
       border: 1px solid var(--line);
       box-shadow: var(--shadow-soft);
-      margin-top: 18px;
       background: var(--navy-soft);
     }
     .leaflet-popup-content-wrapper{
@@ -323,8 +325,8 @@
     .popupLink:hover{ text-decoration: underline; }
     .grid{
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
+      grid-template-columns: 1fr;
+      gap: 14px;
       margin-top: 18px;
     }
     .person{
@@ -453,7 +455,19 @@
         animation-iteration-count: 1 !important;
       }
     }
+    @media (max-width: 1100px){
+      .sidebar{ flex-basis: 360px; width: 360px; }
+    }
     @media (max-width: 900px){
+      .layout{ flex-direction: column; }
+      .sidebar{
+        position: static;
+        width: 100%;
+        flex-basis: auto;
+        max-height: none;
+      }
+      .sidebarScroll{ overflow-y: visible; padding-right: 0; }
+      .mapCol{ position: static; height: 420px; width: 100%; }
       .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
       h1{ max-width: 100%; }
     }
@@ -465,49 +479,50 @@
         padding: 22px 18px;
         border-radius: 22px;
       }
-      .topBar{ justify-content: stretch; }
-      .backBtn{ width: 100%; justify-content: center; }
       .metaRow{ flex-direction: column; align-items: stretch; }
       .copyLinkBtn{ width: 100%; }
       .controls{ grid-template-columns: 1fr; }
       .grid{ grid-template-columns: 1fr; }
-      #map{ height: 300px; }
+      .mapCol{ height: 300px; }
     }
   </style>
 </head>
 <body>
   <main class="page">
-    <div class="topBar">
-      <a class="backBtn" href="https://sites.google.com/wearebridge.org/lincolnnorthrural/home" target="_top" rel="noopener">
-        &larr; Back to Partnership Board
-      </a>
-    </div>
-    <section class="hero">
-      <div class="heroInner">
-        <div class="eyebrow">Community Connectors</div>
-        <h1>Find international food <span class="scriptAccent">near you</span></h1>
-        <p class="intro">
-          A directory of international, halal and speciality food shops near the University of Lincoln's
-          Brayford Pool campus. Browse everything below, filter by type, and tap a shop to get directions.
-        </p>
-      </div>
-      <div class="controls">
-        <select id="categoryFilter" aria-label="Filter by type">
-          <option value="">All types</option>
-        </select>
-        <div class="checkField">
-          <input type="checkbox" id="halalOnly" />
-          <label for="halalOnly">Halal only</label>
+    <div class="layout">
+      <aside class="sidebar">
+        <section class="hero">
+          <div class="heroInner">
+            <div class="eyebrow">Community Connectors</div>
+            <h1>Find international food <span class="scriptAccent">near you</span></h1>
+            <p class="intro">
+              A directory of international, halal and speciality food shops near the University of Lincoln's
+              Brayford Pool campus. Browse everything below, filter by type, and tap a shop to get directions.
+            </p>
+          </div>
+          <div class="controls">
+            <select id="categoryFilter" aria-label="Filter by type">
+              <option value="">All types</option>
+            </select>
+            <div class="checkField">
+              <input type="checkbox" id="halalOnly" />
+              <label for="halalOnly">Halal only</label>
+            </div>
+          </div>
+          <div class="metaRow">
+            <div id="meta" class="meta">Loading directory...</div>
+            <button id="copyLinkBtn" class="copyLinkBtn" type="button">Copy link to this view</button>
+          </div>
+        </section>
+        <div class="sidebarScroll">
+          <section id="directory" class="grid" aria-label="International food shop directory"></section>
+          <div id="status" class="status" hidden></div>
         </div>
+      </aside>
+      <div class="mapCol">
+        <div id="map"></div>
       </div>
-      <div class="metaRow">
-        <div id="meta" class="meta">Loading directory...</div>
-        <button id="copyLinkBtn" class="copyLinkBtn" type="button">Copy link to this view</button>
-      </div>
-    </section>
-    <div id="map"></div>
-    <section id="directory" class="grid" aria-label="International food shop directory"></section>
-    <div id="status" class="status" hidden></div>
+    </div>
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -655,10 +670,13 @@
       if (!value) return "";
       return `tel:${value.replace(/[^0-9+]/g, "")}`;
     }
-    // Google Maps directions link. Uses lat/lng from the sheet as the
-    // destination (most reliable); falls back to the address text if no
-    // coordinates are present.
+    // Google Maps directions link. Prefers the shop's own Google Business
+    // Profile link (the "gmap" column) so people land on the actual listing
+    // with reviews/photos and can get directions from there; falls back to
+    // lat/lng, then the address text, if a shop has no gmap link yet.
     function directionsUrl(g){
+      const gmap = safeUrl(g.gmap);
+      if (gmap) return gmap;
       const lat = Number(g.latitude);
       const lng = Number(g.longitude);
       if (Number.isFinite(lat) && Number.isFinite(lng)){
