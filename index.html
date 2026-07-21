@@ -1,0 +1,931 @@
+<!-- Source CSV: international_food_shops.csv -- import to Google Sheets, publish to web, and update SHEET_ID / SHEET_NAME below -->
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>International Food Shops - Lincoln</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <style>
+    :root{
+      /* Bridge brand palette */
+      --brand-teal: #3AABAA;
+      --deep-navy: #1D2048;
+      --warm-gold: #E8A023;
+      --deep-crimson: #8C1A4A;
+      --vivid-cobalt: #2B38BF;
+      --soft-cream: #F6F1EB;
+      --warm-cream: #F2EDE7;
+      --white: #FFFFFF;
+      --slate: #4A4A5A;
+      /* UI tokens */
+      --bg: var(--soft-cream);
+      --card: var(--white);
+      --text: var(--deep-navy);
+      --muted: var(--slate);
+      --accent: var(--brand-teal);
+      --line: rgba(29, 32, 72, .14);
+      --line-strong: rgba(29, 32, 72, .22);
+      --teal-soft: rgba(58, 171, 170, .14);
+      --gold-soft: rgba(232, 160, 35, .18);
+      --navy-soft: rgba(29, 32, 72, .08);
+      --shadow: 0 18px 42px rgba(29, 32, 72, .14);
+      --shadow-soft: 0 10px 24px rgba(29, 32, 72, .08);
+      --radius-lg: 28px;
+      --radius-md: 18px;
+      --radius-sm: 12px;
+    }
+    *{ box-sizing: border-box; }
+    body{
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: transparent;
+    }
+    .page{
+      position: relative;
+      isolation: isolate;
+      width: 100%;
+      max-width: none;
+      min-height: 100vh;
+      margin: 0;
+      padding: 12px clamp(18px, 3vw, 40px) 32px;
+      border-radius: 0;
+      background:
+        radial-gradient(circle at 12% 6%, rgba(232, 160, 35, .22) 0 115px, transparent 116px),
+        radial-gradient(circle at 95% 4%, rgba(58, 171, 170, .22) 0 165px, transparent 166px),
+        linear-gradient(180deg, #FDFBF8 0%, var(--soft-cream) 100%);
+      border: none;
+      box-shadow: none;
+      overflow: hidden;
+    }
+    .page::before,
+    .page::after{
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      pointer-events: none;
+      z-index: -1;
+    }
+    .page::before{
+      width: 220px;
+      height: 220px;
+      right: -82px;
+      top: 116px;
+      border: 3px solid rgba(58, 171, 170, .24);
+    }
+    .page::after{
+      width: 96px;
+      height: 96px;
+      left: -36px;
+      bottom: 42px;
+      border: 2px solid rgba(232, 160, 35, .38);
+    }
+    .topBar{
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 8px;
+    }
+    .backBtn{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      background: var(--white);
+      color: var(--deep-navy);
+      border: 1px solid var(--line-strong);
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: var(--shadow-soft);
+      transition: background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
+    }
+    .backBtn:hover,
+    .backBtn:focus-visible{
+      background: var(--brand-teal);
+      color: var(--white);
+      border-color: var(--brand-teal);
+      transform: translateY(-1px);
+    }
+    .hero{
+      position: relative;
+      overflow: hidden;
+      background: var(--brand-teal);
+      color: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: clamp(14px, 2vw, 22px) clamp(18px, 3vw, 32px);
+      margin-bottom: 14px;
+    }
+    .hero::before,
+    .hero::after{
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      pointer-events: none;
+    }
+    .hero::before{
+      width: 190px;
+      height: 190px;
+      right: 28px;
+      top: -70px;
+      border: 3px solid rgba(255,255,255,.36);
+    }
+    .hero::after{
+      width: 118px;
+      height: 118px;
+      right: 72px;
+      top: -34px;
+      border: 1.5px solid rgba(255,255,255,.52);
+    }
+    .heroInner{
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+    }
+    .eyebrow{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.16);
+      border: 1px solid rgba(255,255,255,.35);
+      color: var(--white);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before{
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--warm-gold);
+      box-shadow: 0 0 0 4px rgba(232, 160, 35, .22);
+    }
+    h1, h2, h3, .name{
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    h1{
+      margin: 0;
+      max-width: 26ch;
+      font-size: clamp(22px, 3vw, 34px);
+      line-height: 1.02;
+      letter-spacing: -.03em;
+      font-weight: 800;
+      display: inline;
+    }
+    .scriptAccent{
+      display: inline;
+      margin-left: 8px;
+      font-family: "Dancing Script", cursive;
+      font-size: clamp(24px, 3.4vw, 36px);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0;
+      color: var(--warm-gold);
+    }
+    .intro{
+      margin: 8px 0 0;
+      max-width: 72ch;
+      color: rgba(255,255,255,.9);
+      font-size: 13px;
+      line-height: 1.5;
+      font-weight: 400;
+    }
+    .controls{
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1.3fr .8fr 1fr .8fr auto;
+      gap: 10px;
+      margin-top: 14px;
+      padding: 10px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.22);
+      backdrop-filter: blur(8px);
+      align-items: stretch;
+    }
+    input, select, button{
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid rgba(255,255,255,.85);
+      border-radius: var(--radius-sm);
+      background: var(--white);
+      color: var(--deep-navy);
+      padding: 9px 12px;
+      font: inherit;
+      font-size: 13px;
+      outline: none;
+    }
+    input::placeholder{ color: rgba(74, 74, 90, .72); }
+    input:focus, select:focus{
+      border-color: var(--warm-gold);
+      box-shadow: 0 0 0 4px rgba(232, 160, 35, .24);
+    }
+    button{
+      background: var(--warm-gold);
+      border-color: var(--warm-gold);
+      color: var(--deep-navy);
+      font-weight: 700;
+      cursor: pointer;
+      transition: filter .15s ease;
+    }
+    button:hover{ filter: brightness(1.05); }
+    button:disabled{ opacity: .6; cursor: default; }
+    .checkField{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--white);
+      border: 1px solid rgba(255,255,255,.85);
+      border-radius: var(--radius-sm);
+      padding: 9px 12px;
+      min-height: 40px;
+    }
+    .checkField input[type="checkbox"]{
+      width: 16px;
+      height: 16px;
+      min-height: 0;
+      flex: 0 0 auto;
+      accent-color: var(--brand-teal);
+    }
+    .checkField label{
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--deep-navy);
+      cursor: pointer;
+    }
+    .metaRow{
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .meta{
+      color: rgba(255,255,255,.82);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .copyLinkBtn{
+      width: auto;
+      min-height: 0;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.55);
+      color: var(--white);
+      padding: 7px 13px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background .15s ease, border-color .15s ease;
+    }
+    .copyLinkBtn:hover{
+      background: rgba(255,255,255,.16);
+      border-color: rgba(255,255,255,.85);
+    }
+    .copyLinkBtn.copied{
+      background: var(--warm-gold);
+      border-color: var(--warm-gold);
+      color: var(--deep-navy);
+    }
+    #map{
+      width: 100%;
+      height: 360px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-soft);
+      margin-top: 18px;
+      background: var(--navy-soft);
+    }
+    .leaflet-popup-content-wrapper{
+      border-radius: 14px;
+      font-family: "Poppins", system-ui, sans-serif;
+    }
+    .leaflet-popup-content{ font-size: 13px; line-height: 1.5; color: var(--deep-navy); }
+    .popupName{ font-weight: 700; font-size: 14px; margin: 0 0 4px; color: var(--deep-navy); }
+    .popupMeta{ margin: 0 0 2px; color: var(--slate); }
+    .grid{
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .person{
+      background: rgba(255,255,255,.92);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      backdrop-filter: blur(5px);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .person:hover{
+      transform: translateY(-2px);
+      border-color: rgba(58, 171, 170, .45);
+      box-shadow: 0 16px 34px rgba(29, 32, 72, .14);
+    }
+    .personTop{
+      display: flex;
+      gap: 14px;
+      padding: 16px 16px 12px;
+      align-items: center;
+    }
+    .badge{
+      width: 74px;
+      height: 74px;
+      border-radius: 999px;
+      border: 3px solid var(--white);
+      outline: 2px solid rgba(58, 171, 170, .35);
+      background: linear-gradient(135deg, var(--deep-navy), var(--brand-teal));
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 13px;
+      text-align: center;
+      line-height: 1.1;
+      box-shadow: 0 6px 16px rgba(29, 32, 72, .18);
+      flex: 0 0 auto;
+    }
+    .name{
+      margin: 0;
+      color: var(--deep-navy);
+      font-size: 18px;
+      line-height: 1.2;
+      letter-spacing: -.018em;
+      font-weight: 700;
+    }
+    .role{
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      font-weight: 400;
+    }
+    .distance{
+      display: inline-block;
+      margin-top: 6px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--gold-soft);
+      color: var(--deep-navy);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .body{
+      padding: 0 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+    .org{
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--brand-teal);
+    }
+    .bio{
+      margin: 0;
+      color: var(--slate);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .chips{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: auto;
+    }
+    .chip{
+      border: 1px solid rgba(58, 171, 170, .28);
+      background: var(--teal-soft);
+      color: var(--deep-navy);
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .chip.halal{
+      border-color: rgba(232, 160, 35, .5);
+      background: var(--gold-soft);
+    }
+    .chip.kosher{
+      border-color: rgba(43, 56, 191, .35);
+      background: rgba(43, 56, 191, .12);
+    }
+    .contact{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 2px;
+    }
+    .contact a{
+      text-decoration: none;
+      color: var(--deep-navy);
+      background: var(--white);
+      border: 1px solid var(--line-strong);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      transition: background .18s ease, color .18s ease, border-color .18s ease;
+    }
+    .contact a:hover,
+    .contact a:focus-visible{
+      border-color: var(--brand-teal);
+      background: var(--brand-teal);
+      color: var(--white);
+    }
+    .empty, .status{
+      text-align: center;
+      color: var(--muted);
+      padding: 22px;
+      background: rgba(255,255,255,.78);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      margin-top: 18px;
+    }
+    @media (prefers-reduced-motion: reduce){
+      *, *::before, *::after{
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .controls{ grid-template-columns: 1fr 1fr; }
+      h1{ max-width: 100%; }
+    }
+    @media (max-width: 560px){
+      .page{
+        padding: 12px 12px 32px;
+      }
+      .hero{
+        padding: 22px 18px;
+        border-radius: 22px;
+      }
+      .topBar{ justify-content: stretch; }
+      .backBtn{ width: 100%; justify-content: center; }
+      .metaRow{ flex-direction: column; align-items: stretch; }
+      .copyLinkBtn{ width: 100%; }
+      .controls{ grid-template-columns: 1fr; }
+      .grid{ grid-template-columns: 1fr; }
+      .personTop{ align-items: flex-start; }
+      .badge{ width: 68px; height: 68px; }
+      #map{ height: 300px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="topBar">
+      <a class="backBtn" href="https://sites.google.com/wearebridge.org/lincolnnorthrural/home" target="_top" rel="noopener">
+        &larr; Back to Partnership Board
+      </a>
+    </div>
+    <section class="hero">
+      <div class="heroInner">
+        <div class="eyebrow">Community Connectors</div>
+        <h1>Find international food <span class="scriptAccent">near you</span></h1>
+        <p class="intro">
+          A directory of international, halal and speciality food shops around Lincoln, including those near the
+          University of Lincoln's Brayford Pool campus. Enter a postcode and a distance to see what's nearby,
+          or browse everything below.
+        </p>
+      </div>
+      <div class="controls">
+        <input id="postcode" type="text" placeholder="Enter a postcode, e.g. LN5 7SF" aria-label="Postcode" autocomplete="off" />
+        <select id="radius" aria-label="Search radius">
+          <option value="1" selected>Within 1 mile</option>
+          <option value="3">Within 3 miles</option>
+          <option value="5">Within 5 miles</option>
+          <option value="10">Within 10 miles</option>
+          <option value="20">Within 20 miles</option>
+        </select>
+        <select id="categoryFilter" aria-label="Filter by type">
+          <option value="">All types</option>
+        </select>
+        <div class="checkField">
+          <input type="checkbox" id="halalOnly" />
+          <label for="halalOnly">Halal only</label>
+        </div>
+        <button id="searchBtn" type="button">Search</button>
+      </div>
+      <div class="metaRow">
+        <div id="meta" class="meta">Loading directory...</div>
+        <button id="copyLinkBtn" class="copyLinkBtn" type="button">Copy link to this view</button>
+      </div>
+    </section>
+    <div id="map"></div>
+    <section id="directory" class="grid" aria-label="International food shop directory"></section>
+    <div id="status" class="status" hidden></div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script>
+    // ---- Configuration: update these two values for your sheet ----
+    const SHEET_ID = "1KLXNTk9cCJ4G6d7jUR_DOjMe2hu63kI0TA1SX59fWA0";
+    // Tab name inside the Google Sheet. Must match the tab you import international_food_shops.csv into.
+    const SHEET_NAME = "Sheet1";
+    const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+
+    // Default map view: centred on the High Street / Brayford Pool cluster in Lincoln.
+    const DEFAULT_CENTER = [53.2225, -0.5455];
+    const DEFAULT_ZOOM = 14;
+
+    const directoryEl = document.getElementById("directory");
+    const statusEl = document.getElementById("status");
+    const metaEl = document.getElementById("meta");
+    const postcodeEl = document.getElementById("postcode");
+    const radiusEl = document.getElementById("radius");
+    const categoryFilterEl = document.getElementById("categoryFilter");
+    const halalOnlyEl = document.getElementById("halalOnly");
+    const searchBtn = document.getElementById("searchBtn");
+    const copyLinkBtn = document.getElementById("copyLinkBtn");
+
+    let shops = [];
+    let searchOrigin = null; // { lat, lng } of the searched postcode, or null
+
+    // ---- Shareable URL support ----
+    // Reads/writes ?postcode=...&radius=...&category=...&halal=1 so a specific filtered
+    // view can be copied and sent as a link. Works when this page is opened
+    // directly (e.g. a hosted URL); a Google Sites Embed loads this in an
+    // iframe, so the browser's own address bar won't reflect it there - the
+    // Copy Link button always builds the link from this page's own URL, which
+    // is what you'd share instead of the Sites page link.
+    function paramsFromControls(){
+      const params = new URLSearchParams();
+      const pc = postcodeEl.value.trim();
+      if (pc) params.set("postcode", pc);
+      if (radiusEl.value) params.set("radius", radiusEl.value);
+      if (categoryFilterEl.value) params.set("category", categoryFilterEl.value);
+      if (halalOnlyEl.checked) params.set("halal", "1");
+      return params;
+    }
+    function updateUrl(){
+      const query = paramsFromControls().toString();
+      const newUrl = `${window.location.pathname}${query ? "?" + query : ""}${window.location.hash}`;
+      window.history.replaceState({}, "", newUrl);
+    }
+    function applyParamsFromUrl(){
+      const params = new URLSearchParams(window.location.search);
+      const pc = params.get("postcode");
+      const radius = params.get("radius");
+      const category = params.get("category");
+      const halal = params.get("halal");
+      if (pc) postcodeEl.value = pc;
+      if (radius && [...radiusEl.options].some(o => o.value === radius)){
+        radiusEl.value = radius;
+      }
+      if (category && [...categoryFilterEl.options].some(o => o.value === category)){
+        categoryFilterEl.value = category;
+      }
+      if (halal === "1") halalOnlyEl.checked = true;
+      return Boolean(pc);
+    }
+    async function copyShareLink(){
+      updateUrl();
+      const link = window.location.href;
+      const showCopied = () => {
+        copyLinkBtn.textContent = "Link copied!";
+        copyLinkBtn.classList.add("copied");
+        setTimeout(() => {
+          copyLinkBtn.textContent = "Copy link to this view";
+          copyLinkBtn.classList.remove("copied");
+        }, 2000);
+      };
+      try{
+        await navigator.clipboard.writeText(link);
+        showCopied();
+      } catch {
+        // Clipboard API can be blocked inside an iframe - fall back to a
+        // temporary text field and the older copy command.
+        const temp = document.createElement("input");
+        temp.value = link;
+        document.body.appendChild(temp);
+        temp.select();
+        try{ document.execCommand("copy"); showCopied(); }
+        catch { window.prompt("Copy this link:", link); }
+        document.body.removeChild(temp);
+      }
+    }
+
+    const map = L.map("map", { scrollWheelZoom: false }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 18
+    }).addTo(map);
+    let markerLayer = L.layerGroup().addTo(map);
+    let searchMarker = null;
+
+    function parseCSV(text){
+      const rows = [];
+      let row = [];
+      let cell = "";
+      let inQuotes = false;
+      for (let i = 0; i < text.length; i++){
+        const c = text[i];
+        const next = text[i + 1];
+        if (c === '"'){
+          if (inQuotes && next === '"'){
+            cell += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+          continue;
+        }
+        if (!inQuotes && c === ","){
+          row.push(cell);
+          cell = "";
+          continue;
+        }
+        if (!inQuotes && (c === "\n" || c === "\r")){
+          if (c === "\r" && next === "\n") i++;
+          row.push(cell);
+          cell = "";
+          if (row.some(value => value.trim() !== "")) rows.push(row);
+          row = [];
+          continue;
+        }
+        cell += c;
+      }
+      row.push(cell);
+      if (row.some(value => value.trim() !== "")) rows.push(row);
+      return rows;
+    }
+    function normalise(value){
+      return String(value || "").trim();
+    }
+    function isYes(value){
+      const v = normalise(value).toLowerCase();
+      return v === "yes" || v === "y" || v === "true";
+    }
+    function safeUrl(url){
+      const value = normalise(url);
+      if (!value) return "";
+      const withScheme = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+      try{
+        const u = new URL(withScheme);
+        if (u.protocol === "http:" || u.protocol === "https:") return withScheme;
+      } catch {}
+      return "";
+    }
+    function mailto(email){
+      const value = normalise(email);
+      if (!value || !value.includes("@")) return "";
+      return `mailto:${value}`;
+    }
+    function tel(phone){
+      const value = normalise(phone);
+      if (!value) return "";
+      return `tel:${value.replace(/[^0-9+]/g, "")}`;
+    }
+    function escapeHtml(value){
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+    function makeObjectRows(rows){
+      if (!rows.length) return [];
+      const headers = rows[0].map(h => normalise(h));
+      return rows.slice(1).map(row => {
+        const obj = {};
+        headers.forEach((header, index) => {
+          obj[header] = normalise(row[index]);
+        });
+        return obj;
+      });
+    }
+    function badgeText(name){
+      return normalise(name)
+        .split(/\s+/)
+        .slice(0, 2)
+        .map(part => part[0] || "")
+        .join("")
+        .toUpperCase() || "?";
+    }
+    // Haversine distance in miles between two lat/lng points.
+    function milesBetween(lat1, lon1, lat2, lon2){
+      const R = 3958.8; // Earth radius in miles
+      const toRad = deg => (deg * Math.PI) / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2 +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+    async function geocodePostcode(postcode){
+      const clean = normalise(postcode).replace(/\s+/g, "");
+      if (!clean) return null;
+      const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(clean)}`);
+      if (!res.ok) return null;
+      const json = await res.json();
+      if (json.status !== 200 || !json.result) return null;
+      return { lat: json.result.latitude, lng: json.result.longitude };
+    }
+    function populateFilters(data){
+      categoryFilterEl.length = 1;
+      const categories = [...new Set(data.map(g => g.category).filter(Boolean))].sort();
+      for (const category of categories){
+        const option = document.createElement("option");
+        option.value = category;
+        option.textContent = category;
+        categoryFilterEl.appendChild(option);
+      }
+    }
+    function withDistance(list){
+      if (!searchOrigin) return list.map(g => ({ ...g, _distance: null }));
+      return list.map(g => {
+        const lat = Number(g.latitude);
+        const lng = Number(g.longitude);
+        const distance = Number.isFinite(lat) && Number.isFinite(lng)
+          ? milesBetween(searchOrigin.lat, searchOrigin.lng, lat, lng)
+          : null;
+        return { ...g, _distance: distance };
+      });
+    }
+    function render(){
+      const category = categoryFilterEl.value;
+      const radius = Number(radiusEl.value);
+      const halalOnly = halalOnlyEl.checked;
+      let list = withDistance(shops);
+      list = list.filter(g => !category || g.category === category);
+      if (halalOnly) list = list.filter(g => isYes(g.halal));
+      if (searchOrigin){
+        list = list.filter(g => g._distance !== null && g._distance <= radius);
+        list.sort((a, b) => a._distance - b._distance);
+      } else {
+        list.sort((a, b) => normalise(a.name).localeCompare(normalise(b.name)));
+      }
+
+      // Map markers
+      markerLayer.clearLayers();
+      const bounds = [];
+      for (const g of list){
+        const lat = Number(g.latitude);
+        const lng = Number(g.longitude);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+        const popupHtml = `
+          <p class="popupName">${escapeHtml(g.name)}</p>
+          <p class="popupMeta">${escapeHtml(g.category)}</p>
+          <p class="popupMeta">${escapeHtml([g.address, g.postcode].filter(Boolean).join(", "))}</p>
+          <p class="popupMeta">${escapeHtml(g.opening_hours)}</p>
+        `;
+        L.marker([lat, lng]).bindPopup(popupHtml).addTo(markerLayer);
+        bounds.push([lat, lng]);
+      }
+      if (searchOrigin){
+        if (searchMarker) map.removeLayer(searchMarker);
+        searchMarker = L.circleMarker([searchOrigin.lat, searchOrigin.lng], {
+          radius: 8, color: "#E8A023", fillColor: "#E8A023", fillOpacity: 1, weight: 2
+        }).addTo(map).bindPopup("Your search postcode");
+        bounds.push([searchOrigin.lat, searchOrigin.lng]);
+      }
+      if (bounds.length){
+        map.fitBounds(bounds, { padding: [30, 30], maxZoom: 16 });
+      } else {
+        map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+      }
+
+      // Cards
+      directoryEl.innerHTML = "";
+      if (!list.length){
+        directoryEl.innerHTML = `<div class="empty">No shops match those filters. Try a wider radius, clear "Halal only", or clear the postcode to browse everything.</div>`;
+        metaEl.textContent = `Showing 0 of ${shops.length} shops`;
+        return;
+      }
+      for (const g of list){
+        const contactLinks = [];
+        const emailHref = mailto(g.email);
+        if (emailHref) contactLinks.push(`<a href="${escapeHtml(emailHref)}">Email</a>`);
+        const phoneHref = tel(g.phone);
+        if (phoneHref) contactLinks.push(`<a href="${escapeHtml(phoneHref)}">Phone</a>`);
+        const website = safeUrl(g.website);
+        if (website) contactLinks.push(`<a href="${escapeHtml(website)}" target="_blank" rel="noopener">Website</a>`);
+
+        const addressLine = [g.address, g.postcode].filter(Boolean).join(", ");
+        const distanceHtml = g._distance !== null
+          ? `<span class="distance">${g._distance.toFixed(1)} miles away</span>`
+          : (g.walk_from_campus ? `<span class="distance">${escapeHtml(g.walk_from_campus)} walk from campus</span>` : "");
+
+        const chips = [];
+        if (g.category) chips.push(`<span class="chip">${escapeHtml(g.category)}</span>`);
+        if (isYes(g.halal)) chips.push(`<span class="chip halal">Halal</span>`);
+        if (g.kosher && !/^no$/i.test(normalise(g.kosher))) chips.push(`<span class="chip kosher">Kosher: ${escapeHtml(g.kosher)}</span>`);
+
+        const card = document.createElement("article");
+        card.className = "person";
+        card.innerHTML = `
+          <div class="personTop">
+            <div class="badge" aria-hidden="true">${escapeHtml(badgeText(g.name))}</div>
+            <div>
+              <h2 class="name">${escapeHtml(g.name)}</h2>
+              ${g.opening_hours ? `<p class="role">${escapeHtml(g.opening_hours)}</p>` : ""}
+              ${distanceHtml}
+            </div>
+          </div>
+          <div class="body">
+            <div>
+              ${addressLine ? `<div class="org">${escapeHtml(addressLine)}</div>` : ""}
+              ${g.description ? `<p class="bio">${escapeHtml(g.description)}</p>` : ""}
+            </div>
+            ${chips.length ? `<div class="chips">${chips.join("")}</div>` : ""}
+            ${contactLinks.length ? `<div class="contact">${contactLinks.join("")}</div>` : ""}
+          </div>
+        `;
+        directoryEl.appendChild(card);
+      }
+      metaEl.textContent = searchOrigin
+        ? `Showing ${list.length} of ${shops.length} shops within ${radius} mile${radius === 1 ? "" : "s"}`
+        : `Showing all ${list.length} shops`;
+    }
+    async function runSearch(){
+      const postcode = postcodeEl.value.trim();
+      if (!postcode){
+        searchOrigin = null;
+        render();
+        return;
+      }
+      searchBtn.disabled = true;
+      searchBtn.textContent = "Searching...";
+      statusEl.hidden = true;
+      try{
+        const point = await geocodePostcode(postcode);
+        if (!point){
+          statusEl.hidden = false;
+          statusEl.textContent = "Couldn't find that postcode. Check it's a valid UK postcode and try again.";
+          searchOrigin = null;
+        } else {
+          searchOrigin = point;
+        }
+        render();
+        updateUrl();
+      } catch (err){
+        console.error(err);
+        statusEl.hidden = false;
+        statusEl.textContent = "Something went wrong looking up that postcode. Please try again.";
+      } finally {
+        searchBtn.disabled = false;
+        searchBtn.textContent = "Search";
+      }
+    }
+    async function loadDirectory(){
+      try{
+        const res = await fetch(CSV_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+        const csv = await res.text();
+        const rows = parseCSV(csv);
+        shops = makeObjectRows(rows);
+        populateFilters(shops);
+        // Pre-fill from a shared link (?postcode=...&radius=...&category=...&halal=1).
+        // Category/radius need the <select> options to exist first, hence this
+        // runs after populateFilters(). If a postcode was in the link, run the
+        // search automatically so the recipient sees the same filtered view.
+        const hasPostcode = applyParamsFromUrl();
+        if (hasPostcode){
+          await runSearch();
+        } else {
+          render();
+        }
+      } catch (err){
+        console.error(err);
+        metaEl.textContent = "Could not load the directory.";
+        statusEl.hidden = false;
+        statusEl.textContent = "Check that the Google Sheet is published to the web, the Sheet ID is correct, and the tab name is exactly right.";
+      }
+    }
+    searchBtn.addEventListener("click", runSearch);
+    postcodeEl.addEventListener("keydown", (e) => { if (e.key === "Enter") runSearch(); });
+    radiusEl.addEventListener("change", () => { render(); updateUrl(); });
+    categoryFilterEl.addEventListener("change", () => { render(); updateUrl(); });
+    halalOnlyEl.addEventListener("change", () => { render(); updateUrl(); });
+    copyLinkBtn.addEventListener("click", copyShareLink);
+    loadDirectory();
+  </script>
+</body>
+</html>
