@@ -759,6 +759,9 @@
       const subcategory = subcategoryFilterEl.value;
       let list = places.filter(g => !religion || g.religion === religion);
       if (subcategory) list = list.filter(g => g.subcategory === subcategory);
+      // Skip anything without a usable map location - no lat/long in the
+      // sheet means there's nothing to plot or give directions to.
+      list = list.filter(g => Number.isFinite(Number(g.latitude)) && Number.isFinite(Number(g.longitude)) && normalise(g.latitude) !== "" && normalise(g.longitude) !== "");
       list.sort((a, b) => normalise(a.name).localeCompare(normalise(b.name)));
 
       // Map markers
