@@ -110,6 +110,54 @@
     .mapCol{
       grid-area: map;
       min-height: 0;
+      position: relative;
+    }
+    .mapLegend{
+      position: absolute;
+      z-index: 500;
+      right: 12px;
+      bottom: 12px;
+      max-width: 220px;
+      max-height: 45%;
+      overflow-y: auto;
+      background: rgba(255,255,255,.94);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow-soft);
+      padding: 10px 12px;
+      font-size: 12px;
+      line-height: 1.5;
+      backdrop-filter: blur(4px);
+    }
+    .mapLegend h3{
+      margin: 0 0 6px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-weight: 700;
+      color: var(--muted);
+    }
+    .mapLegend .legendRow{
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin: 3px 0;
+      font-weight: 600;
+      color: var(--deep-navy);
+    }
+    .mapLegend .legendDot{
+      width: 11px;
+      height: 11px;
+      border-radius: 999px;
+      flex: 0 0 auto;
+      border: 1px solid rgba(29,32,72,.35);
+    }
+    .customPin{
+      background: transparent !important;
+      border: none !important;
+    }
+    @media (max-width: 560px){
+      .mapLegend{ max-width: 160px; font-size: 11px; padding: 8px 10px; }
     }
     .hero{
       grid-area: hero;
@@ -303,6 +351,7 @@
       margin-top: 18px;
     }
     .person{
+      position: relative;
       background: rgba(255,255,255,.92);
       border: 1px solid var(--line);
       border-radius: 22px;
@@ -313,6 +362,17 @@
       min-height: 100%;
       backdrop-filter: blur(5px);
       transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .pinDot{
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      border: 1.5px solid rgba(255,255,255,.9);
+      box-shadow: 0 0 0 1px rgba(29,32,72,.25), var(--shadow-soft);
+      pointer-events: none;
     }
     .person:hover{
       transform: translateY(-2px);
@@ -510,6 +570,7 @@
       </section>
       <div class="mapCol">
         <div id="map"></div>
+        <div id="mapLegend" class="mapLegend" hidden></div>
       </div>
       <div class="cardsCol">
         <section id="directory" class="grid" aria-label="Places of worship directory"></section>
@@ -538,12 +599,97 @@
       "Buddhism", "Paganism / Druidry", "Hinduism", "Sikhism", "Baha'i"
     ];
 
+    // ---- Pin colours ----
+    // Each religion gets its own hue; every denomination/tradition within
+    // that religion gets a different lightness of the same hue, so the map
+    // reads as "one colour family per faith, with visible variety inside
+    // it" - most useful for Christianity, which has the most denominations.
+    // Anything not listed here (a new religion added to the sheet later)
+    // falls back to a neutral grey hue rather than breaking.
+    const RELIGION_HUES = {
+      "Christianity": { hue: 231, sat: 62 },                        // vivid cobalt family
+      "Islam": { hue: 152, sat: 45 },                                // green family
+      "Judaism": { hue: 271, sat: 40 },                              // purple family
+      "Multi-Faith / University Facilities": { hue: 178, sat: 45 },  // brand teal family
+      "Buddhism": { hue: 32, sat: 75 },                              // saffron/orange family
+      "Paganism / Druidry": { hue: 95, sat: 35 },                    // moss/olive family
+      "Hinduism": { hue: 350, sat: 55 },                             // deep red/pink family
+      "Sikhism": { hue: 205, sat: 60 },                              // sky blue family
+      "Baha'i": { hue: 45, sat: 65 }                                 // gold family
+    };
+    const DEFAULT_HUE = { hue: 220, sat: 8 };
+    const LIGHTNESS_MIN = 28;
+    const LIGHTNESS_MAX = 66;
+
+    // Cache of subcategory -> lightness per religion, built once the data
+    // has loaded (so it reflects whatever denominations actually appear in
+    // the sheet, in a stable alphabetical order).
+    let subcategoryLightness = {};
+    function buildColourScale(data){
+      subcategoryLightness = {};
+      const byReligion = {};
+      for (const g of data){
+        if (!g.religion) continue;
+        (byReligion[g.religion] ||= new Set()).add(g.subcategory || "");
+      }
+      for (const [religion, set] of Object.entries(byReligion)){
+        const subs = [...set].sort();
+        const n = subs.length;
+        subcategoryLightness[religion] = {};
+        subs.forEach((sub, i) => {
+          const lightness = n <= 1
+            ? Math.round((LIGHTNESS_MIN + LIGHTNESS_MAX) / 2)
+            : Math.round(LIGHTNESS_MIN + (i * (LIGHTNESS_MAX - LIGHTNESS_MIN)) / (n - 1));
+          subcategoryLightness[religion][sub] = lightness;
+        });
+      }
+    }
+    function pinColour(g){
+      const palette = RELIGION_HUES[g.religion] || DEFAULT_HUE;
+      const lightness = subcategoryLightness[g.religion]?.[g.subcategory || ""] ?? 45;
+      return `hsl(${palette.hue}, ${palette.sat}%, ${lightness}%)`;
+    }
+    // Builds a small teardrop map pin (SVG) tinted with the given colour, so
+    // we're not limited to Leaflet's default single-colour marker image.
+    function pinIcon(colour){
+      const svg = `
+        <svg width="26" height="36" viewBox="0 0 26 36" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 0C5.8 0 0 5.9 0 13.1c0 9.6 13 22.9 13 22.9s13-13.3 13-22.9C26 5.9 20.2 0 13 0z"
+                fill="${colour}" stroke="#1D2048" stroke-width="1.25" stroke-opacity="0.55"/>
+          <circle cx="13" cy="13" r="4.6" fill="#ffffff" fill-opacity="0.92"/>
+        </svg>`;
+      return L.divIcon({
+        className: "customPin",
+        html: svg,
+        iconSize: [26, 36],
+        iconAnchor: [13, 35],
+        popupAnchor: [0, -30]
+      });
+    }
+    function renderMapLegend(data){
+      const present = [...new Set(
+        data.filter(g => Number.isFinite(Number(g.latitude)) && Number.isFinite(Number(g.longitude)) && normalise(g.latitude) !== "")
+            .map(g => g.religion)
+            .filter(Boolean)
+      )];
+      const ordered = sortReligions(present);
+      if (!ordered.length){ mapLegendEl.hidden = true; return; }
+      mapLegendEl.innerHTML = `<h3>Faith</h3>` + ordered.map(religion => {
+        const palette = RELIGION_HUES[religion] || DEFAULT_HUE;
+        const midLightness = Math.round((LIGHTNESS_MIN + LIGHTNESS_MAX) / 2);
+        const colour = `hsl(${palette.hue}, ${palette.sat}%, ${midLightness}%)`;
+        return `<div class="legendRow"><span class="legendDot" style="background:${colour}"></span>${escapeHtml(religion)}</div>`;
+      }).join("");
+      mapLegendEl.hidden = false;
+    }
+
     const directoryEl = document.getElementById("directory");
     const statusEl = document.getElementById("status");
     const metaEl = document.getElementById("meta");
     const religionFilterEl = document.getElementById("religionFilter");
     const subcategoryFilterEl = document.getElementById("subcategoryFilter");
     const copyLinkBtn = document.getElementById("copyLinkBtn");
+    const mapLegendEl = document.getElementById("mapLegend");
 
     let places = [];
 
@@ -781,7 +927,7 @@
           <p class="popupMeta">${escapeHtml(g.times)}</p>
           ${dirLink ? `<a class="popupLink" href="${escapeHtml(dirLink)}" target="_blank" rel="noopener">Get directions &rarr;</a>` : ""}
         `;
-        const marker = L.marker([lat, lng]).bindPopup(popupHtml).addTo(markerLayer);
+        const marker = L.marker([lat, lng], { icon: pinIcon(pinColour(g)) }).bindPopup(popupHtml).addTo(markerLayer);
         markerByPlaceKey.set(placeKey(g), marker);
         bounds.push([lat, lng]);
       }
@@ -844,6 +990,7 @@
             ${chips.length ? `<div class="chips">${chips.join("")}</div>` : ""}
             ${contactLinks.length ? `<div class="contact">${contactLinks.join("")}</div>` : ""}
           </div>
+          <span class="pinDot" style="background:${pinColour(g)}" title="${escapeHtml(g.subcategory || g.religion)}"></span>
         `;
 
         if (hasLocation){
@@ -885,6 +1032,8 @@
         places = makeObjectRows(rows).filter(
           place => normalise(place.status).toLowerCase() !== "closed"
         );
+        buildColourScale(places);
+        renderMapLegend(places);
         populateFilters(places);
         populateSubcategoryFilter("");
         // Pre-fill from a shared link (?religion=...&subcategory=...). Needs
