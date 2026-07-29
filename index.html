@@ -1,0 +1,908 @@
+<!-- Source CSV: 2026-07 Lincoln City Places of Worship - Data.csv -- import to Google Sheets, publish to web, and update SHEET_ID / SHEET_NAME below -->
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Places of Worship - Lincoln</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <style>
+    :root{
+      /* Bridge brand palette */
+      --brand-teal: #3AABAA;
+      --deep-navy: #1D2048;
+      --warm-gold: #E8A023;
+      --deep-crimson: #8C1A4A;
+      --vivid-cobalt: #2B38BF;
+      --soft-cream: #F6F1EB;
+      --warm-cream: #F2EDE7;
+      --white: #FFFFFF;
+      --slate: #4A4A5A;
+      /* UI tokens */
+      --bg: var(--soft-cream);
+      --card: var(--white);
+      --text: var(--deep-navy);
+      --muted: var(--slate);
+      --accent: var(--brand-teal);
+      --line: rgba(29, 32, 72, .14);
+      --line-strong: rgba(29, 32, 72, .22);
+      --teal-soft: rgba(58, 171, 170, .14);
+      --gold-soft: rgba(232, 160, 35, .18);
+      --navy-soft: rgba(29, 32, 72, .08);
+      --crimson-soft: rgba(140, 26, 74, .14);
+      --shadow: 0 18px 42px rgba(29, 32, 72, .14);
+      --shadow-soft: 0 10px 24px rgba(29, 32, 72, .08);
+      --radius-lg: 28px;
+      --radius-md: 18px;
+      --radius-sm: 12px;
+    }
+    *{ box-sizing: border-box; }
+    body{
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: transparent;
+    }
+    .page{
+      position: relative;
+      isolation: isolate;
+      width: 100%;
+      max-width: none;
+      min-height: 100vh;
+      margin: 0;
+      padding: 12px clamp(18px, 3vw, 40px) 32px;
+      border-radius: 0;
+      background:
+        radial-gradient(circle at 12% 6%, rgba(232, 160, 35, .22) 0 115px, transparent 116px),
+        radial-gradient(circle at 95% 4%, rgba(58, 171, 170, .22) 0 165px, transparent 166px),
+        linear-gradient(180deg, #FDFBF8 0%, var(--soft-cream) 100%);
+      border: none;
+      box-shadow: none;
+      overflow: hidden;
+    }
+    .page::before,
+    .page::after{
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      pointer-events: none;
+      z-index: -1;
+    }
+    .page::before{
+      width: 220px;
+      height: 220px;
+      right: -82px;
+      top: 116px;
+      border: 3px solid rgba(58, 171, 170, .24);
+    }
+    .page::after{
+      width: 96px;
+      height: 96px;
+      left: -36px;
+      bottom: 42px;
+      border: 2px solid rgba(232, 160, 35, .38);
+    }
+    /* Desktop: hero + card list in a left column, map filling the rest of
+       the screen on the right. Tablet/phone: single column, in the order
+       hero -> map -> cards, so people see the map before scrolling through
+       every entry. Grid areas make the reorder possible without moving the
+       actual HTML, so tab/reading order stays sensible at every size. */
+    .layout{
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      grid-template-rows: auto 1fr;
+      grid-template-areas:
+        "hero map"
+        "cards map";
+      gap: 16px 20px;
+      height: calc(100vh - 24px);
+    }
+    .cardsCol{
+      grid-area: cards;
+      overflow-y: auto;
+      padding-right: 6px;
+      min-height: 0;
+    }
+    .mapCol{
+      grid-area: map;
+      min-height: 0;
+    }
+    .hero{
+      grid-area: hero;
+      position: relative;
+      overflow: hidden;
+      background: var(--brand-teal);
+      color: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: clamp(14px, 2vw, 22px) clamp(18px, 3vw, 32px);
+    }
+    .hero::before,
+    .hero::after{
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      pointer-events: none;
+    }
+    .hero::before{
+      width: 190px;
+      height: 190px;
+      right: 28px;
+      top: -70px;
+      border: 3px solid rgba(255,255,255,.36);
+    }
+    .hero::after{
+      width: 118px;
+      height: 118px;
+      right: 72px;
+      top: -34px;
+      border: 1.5px solid rgba(255,255,255,.52);
+    }
+    .heroInner{
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+    }
+    .eyebrow{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.16);
+      border: 1px solid rgba(255,255,255,.35);
+      color: var(--white);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before{
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--warm-gold);
+      box-shadow: 0 0 0 4px rgba(232, 160, 35, .22);
+    }
+    h1, h2, h3, .name{
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    h1{
+      margin: 8px 0 0;
+      max-width: 26ch;
+      font-size: clamp(22px, 3vw, 34px);
+      line-height: 1.02;
+      letter-spacing: -.03em;
+      font-weight: 800;
+      display: block;
+    }
+    .scriptAccent{
+      display: inline;
+      margin-left: 8px;
+      font-family: "Dancing Script", cursive;
+      font-size: clamp(24px, 3.4vw, 36px);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0;
+      color: var(--warm-gold);
+    }
+    .intro{
+      margin: 8px 0 0;
+      max-width: 72ch;
+      color: rgba(255,255,255,.9);
+      font-size: 13px;
+      line-height: 1.5;
+      font-weight: 400;
+    }
+    .controls{
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+      padding: 10px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.22);
+      backdrop-filter: blur(8px);
+      align-items: stretch;
+    }
+    input, select, button{
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid rgba(255,255,255,.85);
+      border-radius: var(--radius-sm);
+      background: var(--white);
+      color: var(--deep-navy);
+      padding: 9px 12px;
+      font: inherit;
+      font-size: 13px;
+      outline: none;
+    }
+    input::placeholder{ color: rgba(74, 74, 90, .72); }
+    input:focus, select:focus{
+      border-color: var(--warm-gold);
+      box-shadow: 0 0 0 4px rgba(232, 160, 35, .24);
+    }
+    select:disabled{ opacity: .55; cursor: not-allowed; }
+    button{
+      background: var(--warm-gold);
+      border-color: var(--warm-gold);
+      color: var(--deep-navy);
+      font-weight: 700;
+      cursor: pointer;
+      transition: filter .15s ease;
+    }
+    button:hover{ filter: brightness(1.05); }
+    button:disabled{ opacity: .6; cursor: default; }
+    .metaRow{
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .meta{
+      color: rgba(255,255,255,.82);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .copyLinkBtn{
+      width: auto;
+      min-height: 0;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.55);
+      color: var(--white);
+      padding: 7px 13px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background .15s ease, border-color .15s ease;
+    }
+    .copyLinkBtn:hover{
+      background: rgba(255,255,255,.16);
+      border-color: rgba(255,255,255,.85);
+    }
+    .copyLinkBtn.copied{
+      background: var(--warm-gold);
+      border-color: var(--warm-gold);
+      color: var(--deep-navy);
+    }
+    #map{
+      width: 100%;
+      height: 100%;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-soft);
+      background: var(--navy-soft);
+    }
+    .leaflet-popup-content-wrapper{
+      border-radius: 14px;
+      font-family: "Poppins", system-ui, sans-serif;
+    }
+    .leaflet-popup-content{ font-size: 13px; line-height: 1.5; color: var(--deep-navy); }
+    .popupName{ font-weight: 700; font-size: 14px; margin: 0 0 4px; color: var(--deep-navy); }
+    .popupMeta{ margin: 0 0 2px; color: var(--slate); }
+    .popupLink{ display: inline-block; margin-top: 4px; font-weight: 700; color: var(--brand-teal); text-decoration: none; }
+    .popupLink:hover{ text-decoration: underline; }
+    .grid{
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .person{
+      background: rgba(255,255,255,.92);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      backdrop-filter: blur(5px);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .person:hover{
+      transform: translateY(-2px);
+      border-color: rgba(58, 171, 170, .45);
+      box-shadow: 0 16px 34px rgba(29, 32, 72, .14);
+    }
+    .person.clickable{ cursor: pointer; }
+    .person.clickable:focus-visible{
+      outline: 3px solid var(--warm-gold);
+      outline-offset: 2px;
+    }
+    .person.selected{
+      border-color: var(--brand-teal);
+      box-shadow: 0 0 0 3px rgba(58, 171, 170, .3), var(--shadow-soft);
+    }
+    .person.infoOnly{
+      background: rgba(246, 241, 235, .85);
+      border-style: dashed;
+    }
+    .personTop{
+      padding: 16px 16px 12px;
+    }
+    .name{
+      margin: 0;
+      color: var(--deep-navy);
+      font-size: 18px;
+      line-height: 1.2;
+      letter-spacing: -.018em;
+      font-weight: 700;
+    }
+    .role{
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      font-weight: 400;
+    }
+    .body{
+      padding: 0 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+    .org{
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--brand-teal);
+    }
+    .bio{
+      margin: 0;
+      color: var(--slate);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .chips{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: auto;
+    }
+    .chip{
+      border: 1px solid rgba(58, 171, 170, .28);
+      background: var(--teal-soft);
+      color: var(--deep-navy);
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .chip.religion{
+      border-color: rgba(43, 56, 191, .35);
+      background: rgba(43, 56, 191, .12);
+      font-weight: 700;
+    }
+    .chip.walk{
+      border-color: rgba(232, 160, 35, .5);
+      background: var(--gold-soft);
+    }
+    .chip.status{
+      border-color: rgba(140, 26, 74, .35);
+      background: var(--crimson-soft);
+      color: var(--deep-crimson);
+    }
+    .contact{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 2px;
+    }
+    .contact a{
+      text-decoration: none;
+      color: var(--deep-navy);
+      background: var(--white);
+      border: 1px solid var(--line-strong);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      transition: background .18s ease, color .18s ease, border-color .18s ease;
+    }
+    .contact a:hover,
+    .contact a:focus-visible{
+      border-color: var(--brand-teal);
+      background: var(--brand-teal);
+      color: var(--white);
+    }
+    .contact a.directions{
+      border-color: var(--brand-teal);
+      background: var(--teal-soft);
+      color: var(--brand-teal);
+    }
+    .contact a.directions:hover,
+    .contact a.directions:focus-visible{
+      background: var(--brand-teal);
+      color: var(--white);
+    }
+    .empty, .status{
+      text-align: center;
+      color: var(--muted);
+      padding: 22px;
+      background: rgba(255,255,255,.78);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      margin-top: 18px;
+    }
+    @media (prefers-reduced-motion: reduce){
+      *, *::before, *::after{
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+    @media (max-width: 1100px){
+      .layout{ grid-template-columns: 360px 1fr; }
+    }
+    @media (max-width: 900px){
+      /* Single column from here down: hero, then map, then the card list -
+         so people get their bearings on the map before scrolling through
+         every entry. */
+      .layout{
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        gap: 14px;
+      }
+      .cardsCol{ order: 3; overflow-y: visible; padding-right: 0; }
+      .mapCol{ order: 2; height: 420px; }
+      .hero{ order: 1; }
+      .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      h1{ max-width: 100%; }
+    }
+    @media (max-width: 560px){
+      .page{
+        padding: 12px 12px 32px;
+      }
+      .hero{
+        padding: 22px 18px;
+        border-radius: 22px;
+      }
+      .metaRow{ flex-direction: column; align-items: stretch; }
+      .copyLinkBtn{ width: 100%; }
+      .controls{ grid-template-columns: 1fr; }
+      .grid{ grid-template-columns: 1fr; }
+      .mapCol{ height: 300px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="layout">
+      <section class="hero">
+        <div class="heroInner">
+          <div class="eyebrow">Community Connectors</div>
+          <h1>Find a place of worship <span class="scriptAccent">near you</span></h1>
+          <p class="intro">
+            A directory of places of worship near the University of Lincoln's Brayford Pool campus, for the
+            Multi-Faith Chaplaincy to share with students. Choose a faith, then narrow to a specific
+            denomination or tradition if you know it, and tap an entry to get directions.
+          </p>
+        </div>
+        <div class="controls">
+          <select id="religionFilter" aria-label="Filter by religion">
+            <option value="">All faiths</option>
+          </select>
+          <select id="subcategoryFilter" aria-label="Filter by denomination or tradition" disabled>
+            <option value="">All denominations / traditions</option>
+          </select>
+        </div>
+        <div class="metaRow">
+          <div id="meta" class="meta">Loading directory...</div>
+          <button id="copyLinkBtn" class="copyLinkBtn" type="button">Copy link to this view</button>
+        </div>
+      </section>
+      <div class="mapCol">
+        <div id="map"></div>
+      </div>
+      <div class="cardsCol">
+        <section id="directory" class="grid" aria-label="Places of worship directory"></section>
+        <div id="status" class="status" hidden></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script>
+    // ---- Configuration: update these two values for your sheet ----
+    const SHEET_ID = "REPLACE_WITH_YOUR_SHEET_ID";
+    // Tab name inside the Google Sheet. Must match the tab you import
+    // "2026-07 Lincoln City Places of Worship - Data.csv" into.
+    const SHEET_NAME = "Sheet1";
+    const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+
+    // Default map view: centred on the Brayford Pool / High Street cluster in Lincoln, near campus.
+    const DEFAULT_CENTER = [53.2278, -0.5405];
+    const DEFAULT_ZOOM = 14;
+
+    // Preferred display order for the Religion dropdown - anything not listed
+    // here (a new religion added to the sheet later) is appended alphabetically.
+    const RELIGION_ORDER = [
+      "Christianity", "Islam", "Judaism", "Multi-Faith / University Facilities",
+      "Buddhism", "Paganism / Druidry", "Hinduism", "Sikhism", "Baha'i"
+    ];
+
+    const directoryEl = document.getElementById("directory");
+    const statusEl = document.getElementById("status");
+    const metaEl = document.getElementById("meta");
+    const religionFilterEl = document.getElementById("religionFilter");
+    const subcategoryFilterEl = document.getElementById("subcategoryFilter");
+    const copyLinkBtn = document.getElementById("copyLinkBtn");
+
+    let places = [];
+
+    // ---- Shareable URL support ----
+    // Reads/writes ?religion=...&subcategory=... so a specific filtered view
+    // can be copied and sent as a link. Works when this page is opened
+    // directly (e.g. a hosted URL); a Google Sites Embed loads this in an
+    // iframe, so the browser's own address bar won't reflect it there - the
+    // Copy Link button always builds the link from this page's own URL,
+    // which is what you'd share instead of the Sites page link.
+    function paramsFromControls(){
+      const params = new URLSearchParams();
+      if (religionFilterEl.value) params.set("religion", religionFilterEl.value);
+      if (subcategoryFilterEl.value) params.set("subcategory", subcategoryFilterEl.value);
+      return params;
+    }
+    function updateUrl(){
+      const query = paramsFromControls().toString();
+      const newUrl = `${window.location.pathname}${query ? "?" + query : ""}${window.location.hash}`;
+      window.history.replaceState({}, "", newUrl);
+    }
+    function applyParamsFromUrl(){
+      const params = new URLSearchParams(window.location.search);
+      const religion = params.get("religion");
+      const subcategory = params.get("subcategory");
+      if (religion && [...religionFilterEl.options].some(o => o.value === religion)){
+        religionFilterEl.value = religion;
+        populateSubcategoryFilter(religion);
+      }
+      if (subcategory && [...subcategoryFilterEl.options].some(o => o.value === subcategory)){
+        subcategoryFilterEl.value = subcategory;
+      }
+    }
+    async function copyShareLink(){
+      updateUrl();
+      const link = window.location.href;
+      const showCopied = () => {
+        copyLinkBtn.textContent = "Link copied!";
+        copyLinkBtn.classList.add("copied");
+        setTimeout(() => {
+          copyLinkBtn.textContent = "Copy link to this view";
+          copyLinkBtn.classList.remove("copied");
+        }, 2000);
+      };
+      try{
+        await navigator.clipboard.writeText(link);
+        showCopied();
+      } catch {
+        // Clipboard API can be blocked inside an iframe - fall back to a
+        // temporary text field and the older copy command.
+        const temp = document.createElement("input");
+        temp.value = link;
+        document.body.appendChild(temp);
+        temp.select();
+        try{ document.execCommand("copy"); showCopied(); }
+        catch { window.prompt("Copy this link:", link); }
+        document.body.removeChild(temp);
+      }
+    }
+
+    const map = L.map("map", { scrollWheelZoom: false }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 18
+    }).addTo(map);
+    let markerLayer = L.layerGroup().addTo(map);
+    let markerByPlaceKey = new Map();
+    let selectedCard = null;
+    // Stable-enough identity for a place row so a card can find its marker.
+    function placeKey(g){
+      return [g.name, g.address, g.postcode].join("|");
+    }
+
+    function parseCSV(text){
+      const rows = [];
+      let row = [];
+      let cell = "";
+      let inQuotes = false;
+      for (let i = 0; i < text.length; i++){
+        const c = text[i];
+        const next = text[i + 1];
+        if (c === '"'){
+          if (inQuotes && next === '"'){
+            cell += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+          continue;
+        }
+        if (!inQuotes && c === ","){
+          row.push(cell);
+          cell = "";
+          continue;
+        }
+        if (!inQuotes && (c === "\n" || c === "\r")){
+          if (c === "\r" && next === "\n") i++;
+          row.push(cell);
+          cell = "";
+          if (row.some(value => value.trim() !== "")) rows.push(row);
+          row = [];
+          continue;
+        }
+        cell += c;
+      }
+      row.push(cell);
+      if (row.some(value => value.trim() !== "")) rows.push(row);
+      return rows;
+    }
+    function normalise(value){
+      return String(value || "").trim();
+    }
+    function safeUrl(url){
+      const value = normalise(url);
+      if (!value) return "";
+      const withScheme = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+      try{
+        const u = new URL(withScheme);
+        if (u.protocol === "http:" || u.protocol === "https:") return withScheme;
+      } catch {}
+      return "";
+    }
+    function mailto(email){
+      const value = normalise(email);
+      if (!value || !value.includes("@")) return "";
+      return `mailto:${value}`;
+    }
+    function tel(phone){
+      const value = normalise(phone);
+      if (!value) return "";
+      return `tel:${value.replace(/[^0-9+]/g, "")}`;
+    }
+    // Google Maps directions link. Prefers the venue's own gmap column (built
+    // from its geocoded coordinates) so people land on a map centred exactly
+    // on the building; falls back to lat/lng, then the address text, if a
+    // venue has no gmap link yet.
+    function directionsUrl(g){
+      const gmap = safeUrl(g.gmap);
+      if (gmap) return gmap;
+      const lat = Number(g.latitude);
+      const lng = Number(g.longitude);
+      if (Number.isFinite(lat) && Number.isFinite(lng)){
+        return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+      }
+      const addr = [g.address, g.postcode, "Lincoln, UK"].filter(Boolean).join(", ");
+      if (!g.address) return "";
+      return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(addr)}`;
+    }
+    function escapeHtml(value){
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+    function makeObjectRows(rows){
+      if (!rows.length) return [];
+      const headers = rows[0].map(h => normalise(h));
+      return rows.slice(1).map(row => {
+        const obj = {};
+        headers.forEach((header, index) => {
+          obj[header] = normalise(row[index]);
+        });
+        return obj;
+      });
+    }
+    function sortReligions(list){
+      return [...list].sort((a, b) => {
+        const ai = RELIGION_ORDER.indexOf(a);
+        const bi = RELIGION_ORDER.indexOf(b);
+        if (ai === -1 && bi === -1) return a.localeCompare(b);
+        if (ai === -1) return 1;
+        if (bi === -1) return -1;
+        return ai - bi;
+      });
+    }
+    function populateFilters(data){
+      religionFilterEl.length = 1;
+      const religions = sortReligions([...new Set(data.map(g => g.religion).filter(Boolean))]);
+      for (const religion of religions){
+        const option = document.createElement("option");
+        option.value = religion;
+        option.textContent = religion;
+        religionFilterEl.appendChild(option);
+      }
+    }
+    // Rebuilds the sub-category (denomination/tradition) dropdown to match
+    // whichever religion is currently selected - this is the "click
+    // Christianity, see the Christian sub-categories underneath it" behaviour.
+    function populateSubcategoryFilter(religion){
+      subcategoryFilterEl.length = 1;
+      if (!religion){
+        subcategoryFilterEl.value = "";
+        subcategoryFilterEl.disabled = true;
+        subcategoryFilterEl.querySelector("option").textContent = "All denominations / traditions";
+        return;
+      }
+      const subcategories = [...new Set(
+        places.filter(g => g.religion === religion).map(g => g.subcategory).filter(Boolean)
+      )].sort();
+      subcategoryFilterEl.querySelector("option").textContent = `All ${religion} denominations/traditions`;
+      for (const subcategory of subcategories){
+        const option = document.createElement("option");
+        option.value = subcategory;
+        option.textContent = subcategory;
+        subcategoryFilterEl.appendChild(option);
+      }
+      subcategoryFilterEl.disabled = subcategories.length === 0;
+    }
+    function render(){
+      const religion = religionFilterEl.value;
+      const subcategory = subcategoryFilterEl.value;
+      let list = places.filter(g => !religion || g.religion === religion);
+      if (subcategory) list = list.filter(g => g.subcategory === subcategory);
+      list.sort((a, b) => normalise(a.name).localeCompare(normalise(b.name)));
+
+      // Map markers
+      markerLayer.clearLayers();
+      markerByPlaceKey = new Map();
+      selectedCard = null;
+      const bounds = [];
+      for (const g of list){
+        const lat = Number(g.latitude);
+        const lng = Number(g.longitude);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+        const dirLink = directionsUrl(g);
+        const popupHtml = `
+          <p class="popupName">${escapeHtml(g.name)}</p>
+          <p class="popupMeta">${escapeHtml(g.subcategory || g.religion)}</p>
+          <p class="popupMeta">${escapeHtml([g.address, g.postcode].filter(Boolean).join(", "))}</p>
+          <p class="popupMeta">${escapeHtml(g.times)}</p>
+          ${dirLink ? `<a class="popupLink" href="${escapeHtml(dirLink)}" target="_blank" rel="noopener">Get directions &rarr;</a>` : ""}
+        `;
+        const marker = L.marker([lat, lng]).bindPopup(popupHtml).addTo(markerLayer);
+        markerByPlaceKey.set(placeKey(g), marker);
+        bounds.push([lat, lng]);
+      }
+      if (bounds.length){
+        map.fitBounds(bounds, { padding: [30, 30], maxZoom: 16 });
+      } else {
+        map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+      }
+
+      // Cards
+      directoryEl.innerHTML = "";
+      if (!list.length){
+        directoryEl.innerHTML = `<div class="empty">No places of worship match those filters. Try clearing the denomination/tradition filter, or choosing a different faith.</div>`;
+        metaEl.textContent = `Showing 0 of ${places.length} entries`;
+        return;
+      }
+      for (const g of list){
+        const contactLinks = [];
+        const emailHref = mailto(g.email);
+        if (emailHref) contactLinks.push(`<a href="${escapeHtml(emailHref)}">Email</a>`);
+        const phoneHref = tel(g.phone);
+        if (phoneHref) contactLinks.push(`<a href="${escapeHtml(phoneHref)}">Phone</a>`);
+        const website = safeUrl(g.website);
+        if (website) contactLinks.push(`<a href="${escapeHtml(website)}" target="_blank" rel="noopener">Website</a>`);
+        const dirLink = directionsUrl(g);
+        if (dirLink) contactLinks.push(`<a class="directions" href="${escapeHtml(dirLink)}" target="_blank" rel="noopener">Directions</a>`);
+
+        const addressLine = [g.address, g.postcode].filter(Boolean).join(", ");
+
+        const chips = [];
+        if (g.religion) chips.push(`<span class="chip religion">${escapeHtml(g.religion)}</span>`);
+        if (g.subcategory) chips.push(`<span class="chip">${escapeHtml(g.subcategory)}</span>`);
+        if (g.walk_from_campus) chips.push(`<span class="chip walk">${escapeHtml(g.walk_from_campus)}</span>`);
+        const isConfirmedVenue = !g.venue_status || g.venue_status === "Confirmed venue";
+        if (!isConfirmedVenue) chips.push(`<span class="chip status">${escapeHtml(g.venue_status)}</span>`);
+
+        const lat = Number(g.latitude);
+        const lng = Number(g.longitude);
+        const hasLocation = Number.isFinite(lat) && Number.isFinite(lng);
+
+        const card = document.createElement("article");
+        card.className = "person";
+        if (!isConfirmedVenue) card.classList.add("infoOnly");
+        if (hasLocation){
+          card.classList.add("clickable");
+          card.tabIndex = 0;
+          card.setAttribute("role", "button");
+          card.setAttribute("aria-label", `Centre the map on ${g.name}`);
+        }
+        card.innerHTML = `
+          <div class="personTop">
+            <h2 class="name">${escapeHtml(g.name)}</h2>
+            ${g.times ? `<p class="role">${escapeHtml(g.times)}</p>` : ""}
+          </div>
+          <div class="body">
+            <div>
+              ${addressLine ? `<div class="org">${escapeHtml(addressLine)}</div>` : ""}
+              ${g.description ? `<p class="bio">${escapeHtml(g.description)}</p>` : ""}
+            </div>
+            ${chips.length ? `<div class="chips">${chips.join("")}</div>` : ""}
+            ${contactLinks.length ? `<div class="contact">${contactLinks.join("")}</div>` : ""}
+          </div>
+        `;
+
+        if (hasLocation){
+          const focusPlace = () => {
+            map.setView([lat, lng], 17);
+            const marker = markerByPlaceKey.get(placeKey(g));
+            if (marker) marker.openPopup();
+            if (selectedCard) selectedCard.classList.remove("selected");
+            card.classList.add("selected");
+            selectedCard = card;
+            // On tablet/phone the map sits above the card list, so bring it
+            // back into view; on desktop it's already visible in the sticky
+            // column, so this is a no-op there.
+            document.querySelector(".mapCol")?.scrollIntoView({ behavior: "smooth", block: "center" });
+          };
+          card.addEventListener("click", (e) => {
+            if (e.target.closest("a")) return; // let contact/direction links behave normally
+            focusPlace();
+          });
+          card.addEventListener("keydown", (e) => {
+            if (e.target.closest("a")) return;
+            if (e.key === "Enter" || e.key === " "){
+              e.preventDefault();
+              focusPlace();
+            }
+          });
+        }
+
+        directoryEl.appendChild(card);
+      }
+      metaEl.textContent = `Showing ${list.length} of ${places.length} entries`;
+    }
+    async function loadDirectory(){
+      try{
+        const res = await fetch(CSV_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+        const csv = await res.text();
+        const rows = parseCSV(csv);
+        places = makeObjectRows(rows).filter(
+          place => normalise(place.status).toLowerCase() !== "closed"
+        );
+        populateFilters(places);
+        populateSubcategoryFilter("");
+        // Pre-fill from a shared link (?religion=...&subcategory=...). Needs
+        // the <select> options to exist first, hence this runs after populateFilters().
+        applyParamsFromUrl();
+        render();
+      } catch (err){
+        console.error(err);
+        metaEl.textContent = "Could not load the directory.";
+        statusEl.hidden = false;
+        statusEl.textContent = "Check that the Google Sheet is published to the web, the Sheet ID is correct, and the tab name is exactly right.";
+      }
+    }
+    religionFilterEl.addEventListener("change", () => {
+      populateSubcategoryFilter(religionFilterEl.value);
+      render();
+      updateUrl();
+    });
+    subcategoryFilterEl.addEventListener("change", () => { render(); updateUrl(); });
+    copyLinkBtn.addEventListener("click", copyShareLink);
+    loadDirectory();
+  </script>
+</body>
+</html>
