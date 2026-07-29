@@ -848,7 +848,9 @@
         if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
         const csv = await res.text();
         const rows = parseCSV(csv);
-        shops = makeObjectRows(rows);
+        shops = makeObjectRows(rows).filter(
+          shop => normalise(shop.status).toLowerCase() !== "closed"
+        );
         populateFilters(shops);
         // Pre-fill from a shared link (?category=...&halal=1). Needs the
         // <select> options to exist first, hence this runs after populateFilters().
