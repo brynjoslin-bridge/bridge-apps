@@ -3,8 +3,8 @@
 (async function(){
 "use strict";
 async function getJSON(u){const r=await fetch(u,{cache:"no-cache"});if(!r.ok)throw new Error(u+" "+r.status);return r.json()}
-let DATA,PCS;
-try{[DATA,PCS]=await Promise.all([getJSON("data/listings.json"),getJSON("data/postcode-areas.json")])}
+let DATA,PCS,TAX;
+try{[DATA,PCS,TAX]=await Promise.all([getJSON("data/listings.json"),getJSON("data/postcode-areas.json"),getJSON("data/categories.json")])}
 catch(e){document.getElementById("list").innerHTML='<li class="empty">Sorry, the listings could not be loaded. Please refresh the page.</li>';console.error(e);return}
 // Some H.A.Y. text arrives HTML-encoded (e.g. "&amp;"); decode once so it isn't double-escaped on render.
 const dec=t=>typeof t==="string"&&t.includes("&")?(()=>{const x=document.createElement("textarea");x.innerHTML=t;return x.value})():t;
@@ -66,6 +66,33 @@ map.fitBounds(NRB);
 
 function chipsState(){}
 
+
+// ---------- category tree (data/categories.json): max 7 choices per level, empty ones hidden
+const NODES={};const leafOf={};
+(function build(n,id,parent){n.id=id;n.parent=parent;NODES[id]=n;n.set=new Set();
+  if(n.children){if(n.children.length>7)console.warn("More than 7 choices under",n.name||"top level");
+    n.children.forEach((c,i)=>{build(c,id===""?String(i):id+"/"+i,n);c.set.forEach(x=>n.set.add(x))})}
+  else(n.hay||[]).forEach(x=>{n.set.add(x);(leafOf[x]=leafOf[x]||[]).push(n.name)})})(TAX,"",null);
+TAX.name="All categories";
+// Any H.A.Y. category not yet placed in the tree lands in "Other" (shown only when it has listings) until categories.json is updated.
+{const unm=[...new Set(L.flatMap(o=>o.cat))].filter(x=>!leafOf[x]).sort();
+ if(unm.length){console.warn("H.A.Y. categories not in data/categories.json:",unm);
+  const oth={name:"Other",hay:unm,set:new Set(unm),id:String(TAX.children.length),parent:TAX};
+  TAX.children.push(oth);NODES[oth.id]=oth;unm.forEach(x=>{TAX.set.add(x);(leafOf[x]=leafOf[x]||[]).push(x)})}}
+const inNode=(o,n)=>!n||n.id===""||o.cat.some(c=>n.set.has(c));
+const catNames=o=>[...new Set(o.cat.flatMap(c=>leafOf[c]||[c]))];
+function setCat(id){state.cat=id;render()}
+function drawCats(base){
+  const cur=NODES[state.cat]||TAX, browse=cur.children?cur:cur.parent;
+  const count=n=>base.reduce((k,r)=>k+(inNode(r.o,n)?1:0),0);
+  const path=[];for(let n=browse;n;n=n.parent)path.unshift(n);
+  document.getElementById("crumbs").innerHTML=path.length>1||cur!==TAX?path.map((n,i)=>{const last=i===path.length-1&&cur===browse;
+    return last?`<span aria-current="true">${esc(n.name)}</span>`:`<button type="button" data-c="${n.id}">${esc(n.name)}</button>`}).join('<span class="sep" aria-hidden="true">/</span>'):"";
+  const kids=browse.children.map(n=>({n,c:count(n)})).filter(x=>x.c>0||x.n.id===state.cat);
+  document.getElementById("catchips").innerHTML=kids.length?kids.map(({n,c})=>`<button type="button" class="chip${n.children?" grp":""}" data-c="${n.id}" aria-pressed="${n.id===state.cat}">${esc(n.name)} <small>${c}</small>${n.children?'<span class="more" aria-hidden="true">&rsaquo;</span>':""}</button>`).join(""):`<span class="none">No categories match the other filters.</span>`;
+  document.querySelectorAll("#crumbs button,#catchips button").forEach(b=>b.onclick=()=>setCat(b.dataset.c));
+}
+
 // ---------- postcode
 const pcIn=document.getElementById("pc"),pcMsg=document.getElementById("pcmsg");
 // Live lookup via postcodes.io (any UK postcode or district), falling back to the bundled Lincolnshire table.
@@ -118,9 +145,9 @@ document.getElementById("rad").addEventListener("change",()=>{if(state.pc){runPc
 
 // ---------- filters
 function fill(id,vals){const s=document.getElementById(id);[...new Set(vals)].sort().forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;s.appendChild(o)})}
-fill("cat",L.flatMap(o=>o.cat));fill("ls",L.flatMap(o=>o.ls));
+fill("ls",L.flatMap(o=>o.ls));
 document.getElementById("type").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;state.type=b.dataset.v;document.querySelectorAll("#type button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));render()});
-["cat","ls","fr"].forEach(k=>document.getElementById(k).addEventListener("change",e=>{state[k]=e.target.value;render()}));
+["ls","fr"].forEach(k=>document.getElementById(k).addEventListener("change",e=>{state[k]=e.target.value;render()}));
 document.getElementById("sort").addEventListener("change",e=>{state.sort=e.target.value;
   if(state.sort==="near"&&!state.pc&&!state.v){pcMsg.className="msg err";pcMsg.textContent="Enter a postcode first, then sort by nearest.";e.target.value=state.sort="recent"}render()});
 document.getElementById("cw").addEventListener("change",e=>{state.cw=e.target.checked;render()});
@@ -138,7 +165,6 @@ function render(){
     let ls=locsFor(o);
     if(!ls.length){ if(!(o.cw&&state.cw))return; }
     if(state.type&&o.t!==state.type)return;
-    if(state.cat&&!o.cat.includes(state.cat))return;
     if(state.ls&&!o.ls.includes(state.ls))return;
     const f=fresh(o.m);
     if(state.fr==="fresh"&&f!=="fresh")return;
@@ -151,6 +177,8 @@ function render(){
   if(state.sort==="az")rows.sort((a,b)=>a.o.n.localeCompare(b.o.n));
   else if(state.sort==="near")rows.sort((a,b)=>(b.local-a.local)||((a.dmin??999)-(b.dmin??999))||b.o.m.localeCompare(a.o.m));
   else rows.sort((a,b)=>(b.local-a.local)||b.o.m.localeCompare(a.o.m));
+  drawCats(rows);
+  {const cn=NODES[state.cat];if(cn&&cn!==TAX){const keep=rows.filter(r=>inNode(r.o,cn));rows.length=0;rows.push(...keep)}}
   // summary
   const n={fresh:0,age:0,stale:0};rows.forEach(r=>n[fresh(r.o.m)]++);const t=rows.length||1;
   const loc=rows.filter(r=>r.local).length;
@@ -178,14 +206,14 @@ function render(){
     return `<li class="item ${f}" id="l-${o.i}" tabindex="-1"><div class="ihead"><h3>${esc(o.n)}</h3><span class="badge ${f}" title="Last updated ${fmt(o.m)}">Updated ${ago(o.m)}</span></div>
       <p class="where">${local?o.t+" in "+where:(o.t==="Activity"?"Countywide activity":"Countywide support")}</p>
       ${o.d?`<p class="desc">${esc(o.d.length>260?o.d.slice(0,257).replace(/\s+\S*$/,"")+"...":o.d)}</p>`:""}
-      <div class="tags">${o.cat.map(c=>`<span class="tag">${esc(c)}</span>`).join("")}${dup}</div>
+      <div class="tags">${catNames(o).map(c=>`<span class="tag">${esc(c)}</span>`).join("")}${dup}</div>
       <div class="acts"><a href="${esc(o.u)}" target="_blank" rel="noopener">Full details on H.A.Y.</a>${web}${ph}${em}</div></li>`}).join("");
 }
 map.on("popupopen",e=>{e.popup.getElement().querySelectorAll("button[data-i]").forEach(b=>b.addEventListener("click",()=>{
   const el=document.getElementById("l-"+b.dataset.i);if(!el)return;map.closePopup();el.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"center"});
   el.classList.add("flash");el.focus({preventScroll:true});setTimeout(()=>el.classList.remove("flash"),1600)}))});
 function resetAll(){Object.assign(state,{type:"",cat:"",ls:"",fr:"",cw:true,q:""});
-  ["cat","ls","fr"].forEach(i=>document.getElementById(i).value="");document.getElementById("q").value="";document.getElementById("cw").checked=true;
+  ["ls","fr"].forEach(i=>document.getElementById(i).value="");document.getElementById("q").value="";document.getElementById("cw").checked=true;
   document.querySelectorAll("#type button").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.v==="")));render()}
 render();
 

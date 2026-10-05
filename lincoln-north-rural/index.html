@@ -45,18 +45,18 @@
     <div class="sbtns"><button class="btn" id="pcgo" type="button">Search</button><button class="btn ghost" id="pcclear" type="button" hidden>Clear postcode</button></div>
   </div>
   <p class="msg" id="pcmsg" aria-live="polite"></p>
-  <div class="srow2">
-    <label class="f">Category
-    <select id="cat"><option value="">All categories</option></select>
-  </label>
-    <label class="f">Who it's for
-    <select id="ls"><option value="">Everyone</option></select>
-  </label>
+  <div class="catnav">
+    <span class="flab" id="cat-lab">Category</span>
+    <nav class="crumbs" id="crumbs" aria-label="Category path"></nav>
+    <div class="chips" id="catchips" role="group" aria-labelledby="cat-lab"></div>
   </div>
   <div class="row2">
     <div class="seg" role="group" aria-label="Listing type" id="type">
       <button aria-pressed="true" data-v="">All</button><button aria-pressed="false" data-v="Activity">Activities</button><button aria-pressed="false" data-v="Support">Support</button>
     </div>
+    <label class="f">Who it's for
+    <select id="ls"><option value="">Everyone</option></select>
+  </label>
     <label class="f">Last checked
       <select id="fr">
         <option value="">Any time</option>
