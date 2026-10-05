@@ -64,17 +64,7 @@ const markers=window.L.layerGroup().addTo(map);let ring=null,pin=null;
 const NRB=window.L.latLngBounds(Object.values(V).map(v=>[v[0],v[1]])).pad(.12);
 map.fitBounds(NRB);
 
-// ---------- village chips
-(function(){
-  const box=document.getElementById("villages");let h=`<div class="chips"><button class="chip" data-v="" aria-pressed="true">All North Rural <small>${nrLocal.length}</small></button></div>`;
-  ["C1","C2","C3","C4"].forEach(c=>{const vs=Object.entries(V).filter(([k,v])=>v[2]===c);
-    h+=`<div><p class="cl">Cluster ${c.slice(1)}: ${esc(CL[c])}</p><div class="chips">`+vs.map(([k])=>`<button class="chip" data-v="${esc(k)}" aria-pressed="false" ${vc[k]?"":"disabled"}>${esc(k)} <small>${vc[k]}</small></button>`).join("")+`</div></div>`});
-  box.innerHTML=h;box.querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>setVillage(b.dataset.v)));
-})();
-function chipsState(){document.querySelectorAll("#villages .chip").forEach(b=>b.setAttribute("aria-pressed",String(!state.pc&&b.dataset.v===state.v)))}
-function setVillage(v){clearPc(true);state.v=v;chipsState();
-  if(v){const c=V[v];map.setView([c[0],c[1]],14)}else map.fitBounds(NRB);
-  render()}
+function chipsState(){}
 
 // ---------- postcode
 const pcIn=document.getElementById("pc"),pcMsg=document.getElementById("pcmsg");
@@ -132,8 +122,9 @@ fill("cat",L.flatMap(o=>o.cat));fill("ls",L.flatMap(o=>o.ls));
 document.getElementById("type").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;state.type=b.dataset.v;document.querySelectorAll("#type button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));render()});
 ["cat","ls","fr"].forEach(k=>document.getElementById(k).addEventListener("change",e=>{state[k]=e.target.value;render()}));
 document.getElementById("sort").addEventListener("change",e=>{state.sort=e.target.value;
-  if(state.sort==="near"&&!state.pc&&!state.v){pcMsg.className="msg err";pcMsg.textContent="Enter a postcode or pick a village first, then sort by nearest.";e.target.value=state.sort="recent"}render()});
+  if(state.sort==="near"&&!state.pc&&!state.v){pcMsg.className="msg err";pcMsg.textContent="Enter a postcode first, then sort by nearest.";e.target.value=state.sort="recent"}render()});
 document.getElementById("cw").addEventListener("change",e=>{state.cw=e.target.checked;render()});
+document.getElementById("q").addEventListener("keydown",e=>{if(e.key==="Enter"&&pcIn.value.trim())runPc()});
 document.getElementById("q").addEventListener("input",e=>{state.q=e.target.value.trim().toLowerCase();render()});
 
 // ---------- core
@@ -184,8 +175,8 @@ function render(){
     const web=o.web?`<a href="${esc(/^https?:/i.test(o.web)?o.web:"https://"+o.web)}" target="_blank" rel="noopener">Website</a>`:"";
     const ph=o.ph?`<a href="tel:${esc(o.ph.replace(/[^\d+]/g,""))}">${esc(o.ph)}</a>`:"";
     const em=o.em?`<a href="mailto:${esc(o.em)}">${esc(o.em)}</a>`:"";
-    return `<li class="item ${f}" id="l-${o.i}" tabindex="-1"><div class="ihead"><h2>${esc(o.n)}</h2><span class="badge ${f}" title="Last updated ${fmt(o.m)}">Updated ${ago(o.m)}</span></div>
-      <p class="where">${o.t} in ${where}</p>
+    return `<li class="item ${f}" id="l-${o.i}" tabindex="-1"><div class="ihead"><h3>${esc(o.n)}</h3><span class="badge ${f}" title="Last updated ${fmt(o.m)}">Updated ${ago(o.m)}</span></div>
+      <p class="where">${local?o.t+" in "+where:(o.t==="Activity"?"Countywide activity":"Countywide support")}</p>
       ${o.d?`<p class="desc">${esc(o.d.length>260?o.d.slice(0,257).replace(/\s+\S*$/,"")+"...":o.d)}</p>`:""}
       <div class="tags">${o.cat.map(c=>`<span class="tag">${esc(c)}</span>`).join("")}${dup}</div>
       <div class="acts"><a href="${esc(o.u)}" target="_blank" rel="noopener">Full details on H.A.Y.</a>${web}${ph}${em}</div></li>`}).join("");

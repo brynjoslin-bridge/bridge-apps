@@ -7,7 +7,8 @@ A static finder for local groups, activities and support across the Lincoln Nort
 | Path | What it is |
 |---|---|
 | `index.html` | The page |
-| `assets/style.css` | Styles (light and dark mode) |
+| `assets/style.css` | Styles, built on the Bridge design system (teal, navy, cream; Poppins and Dancing Script) |
+| `assets/fonts/`, `assets/img/` | Self-hosted brand fonts and the Bridge wordmark |
 | `assets/app.js` | Search, filters, map and postcode lookup |
 | `data/listings.json` | The H.A.Y. listings snapshot. **This is the file you replace to refresh the data.** |
 | `data/postcode-areas.json`, `data/postcodes.json` | Fallback Lincolnshire postcode table, used only if postcodes.io can't be reached |
@@ -31,6 +32,6 @@ Replace `data/listings.json` with a new export in the same shape (`snapshot` dat
 
 - Map tiles: OpenStreetMap (`tile.openstreetmap.org`), fine for light community use under the OSM tile usage policy. If traffic grows, switch to a hosted tile provider in `assets/app.js`.
 - Postcode lookup: postcodes.io (free, no key, ONS data under the OGL).
-- Leaflet 1.9.4 and Google Fonts from their CDNs.
+- Leaflet 1.9.4 from cdnjs. Fonts are self-hosted, so there is no Google Fonts call.
 
 Not affiliated with or endorsed by H.A.Y. Lincolnshire. Listing content belongs to H.A.Y. Lincolnshire and its providers; each entry links back to the original.
