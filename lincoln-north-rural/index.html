@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>What's on in Lincoln North Rural</title>
+<meta name="description" content="Local groups, activities and support across the Lincoln North Rural villages, with a clear sign of how recently each listing was checked.">
+<meta property="og:title" content="What's on in Lincoln North Rural">
+<meta property="og:description" content="Local groups, activities and support across the Lincoln North Rural villages.">
+<meta name="theme-color" content="#35613F">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%2335613F'/%3E%3Ccircle cx='16' cy='14' r='5' fill='%23E3B729'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<noscript><p style="padding:16px">This finder needs JavaScript. You can browse the same listings at <a href="https://haylincolnshire.co.uk/">H.A.Y. Lincolnshire</a>.</p></noscript>
+<div class="wrap">
+<header>
+  <span class="proto">Prototype, listings checked <span id="snap">recently</span></span>
+  <h1>What's on in Lincoln North Rural</h1>
+  <p>Local groups, activities and support across the North Rural villages, with a clear sign of how recently each listing was checked. Listings come from H.A.Y. Lincolnshire. Choose a North Rural village, or search near any Lincolnshire postcode.</p>
+</header>
+
+<section class="where-panel" aria-label="Where">
+  <div class="pcrow">
+    <label class="f">Postcode
+      <input type="text" id="pc" placeholder="e.g. LN2 2PE" autocomplete="postal-code" inputmode="text" maxlength="9">
+    </label>
+    <label class="f" style="flex:0 1 130px">Within
+      <select id="rad"><option value="1">1 mile</option><option value="2">2 miles</option><option value="3">3 miles</option><option value="5" selected>5 miles</option><option value="10">10 miles</option><option value="20">20 miles</option></select>
+    </label>
+    <button class="btn" id="pcgo" type="button">Search</button>
+    <button class="btn ghost" id="pcclear" type="button" hidden>Clear postcode</button>
+  </div>
+  <p class="msg" id="pcmsg" aria-live="polite"></p>
+  <p class="or">Or pick a North Rural village</p>
+  <div class="villages" id="villages"></div>
+  <div id="map" role="region" aria-label="Map of listings"></div>
+</section>
+
+<section class="filters" aria-label="Filters">
+  <label class="f">Search
+    <input type="search" id="q" placeholder="Try walking, dementia, carers" autocomplete="off">
+  </label>
+  <label class="f">Category
+    <select id="cat"><option value="">All categories</option></select>
+  </label>
+  <label class="f">Who it's for
+    <select id="ls"><option value="">Everyone</option></select>
+  </label>
+  <div class="row2">
+    <div class="seg" role="group" aria-label="Listing type" id="type">
+      <button aria-pressed="true" data-v="">All</button><button aria-pressed="false" data-v="Activity">Activities</button><button aria-pressed="false" data-v="Support">Support</button>
+    </div>
+    <label class="f" style="flex-direction:row;align-items:center;gap:8px">Last checked
+      <select id="fr" style="width:auto">
+        <option value="">Any time</option>
+        <option value="fresh">Within 6 months</option>
+        <option value="notstale">Within a year</option>
+        <option value="stale">Over a year ago</option>
+      </select>
+    </label>
+    <label class="tog"><input type="checkbox" id="cw" checked> Include countywide services</label>
+    <label class="f" style="flex-direction:row;align-items:center;gap:8px">Sort
+      <select id="sort" style="width:auto">
+        <option value="recent">Recently updated</option>
+        <option value="az">A to Z</option>
+        <option value="near">Nearest first</option>
+      </select>
+    </label>
+  </div>
+</section>
+
+<div class="summary" aria-live="polite">
+  <span class="count" id="count"></span>
+  <div class="freshbar" id="bar" aria-hidden="true"></div>
+  <div class="fkey"><span><i style="background:var(--fresh)"></i>Under 6 months</span><span><i style="background:var(--age)"></i>6 to 12 months</span><span><i style="background:var(--stale)"></i>Over a year</span></div>
+</div>
+
+<ol class="list" id="list"><li class="empty">Loading listings...</li></ol>
+
+<footer>
+  <p>Proof of concept built by the Lincoln North Rural Community Connector at <a href="https://wearebridge.org/" target="_blank" rel="noopener">Bridge</a>. Not affiliated with or endorsed by H.A.Y. Lincolnshire. All listing content belongs to H.A.Y. Lincolnshire and its providers; each entry links back to the original.</p>
+  <p>"Last updated" is the date shown on the H.A.Y. listing. Village matching uses the listing address and is approximate. Distances are straight-line from the postcode. Map &copy; OpenStreetMap contributors (ODbL). Postcode locations from postcodes.io (ONS, OGL).</p>
+</footer>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
