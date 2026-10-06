@@ -15,6 +15,7 @@ if(!LOT){APP.innerHTML='<p class="empty" style="margin:24px">Unknown area. <a hr
 // Resolve the lot's places, including any lots it pulls in.
 const PLACES=[];(function add(id,seen){const l=LOTS.lots[id];if(!l||seen.has(id))return;seen.add(id);PLACES.push(...(l.places||[]));(l.include||[]).forEach(x=>add(x,seen))})(CFG.lot,new Set());
 document.title="What's on in "+LOT.name;
+const EX=LOT.examplePostcode||"LN2 2PE", EXOUT=EX.split(" ")[0];
 APP.innerHTML=`<header class="hero">
   <div class="hero-in">
     <a class="areas-link" href="../">All areas</a>
@@ -38,7 +39,7 @@ APP.innerHTML=`<header class="hero">
       <input type="search" id="q" placeholder="Try walking, dementia, carers" autocomplete="off">
     </label>
     <label class="f f-pc">Near postcode
-      <input type="text" id="pc" placeholder="e.g. LN2 2PE" autocomplete="postal-code" inputmode="text" maxlength="9">
+      <input type="text" id="pc" placeholder="e.g. ${esc(EX)}" autocomplete="postal-code" inputmode="text" maxlength="9">
     </label>
     <label class="f f-rad">Within
       <select id="rad"><option value="1">1 mile</option><option value="2">2 miles</option><option value="3">3 miles</option><option value="5" selected>5 miles</option><option value="10">10 miles</option><option value="20">20 miles</option></select>
@@ -189,7 +190,7 @@ async function lookup(raw){
   if(full||dist){
     try{
       const res=await fetch(full?`https://api.postcodes.io/postcodes/${p}`:`https://api.postcodes.io/outcodes/${p}`,{signal:AbortSignal.timeout?AbortSignal.timeout(5000):undefined});
-      if(res.status===404){if(full)return{err:"We couldn't find that postcode. Check it, or try just the first half (for example LN2)."};}
+      if(res.status===404){if(full)return{err:`We couldn't find that postcode. Check it, or try just the first half (for example ${EXOUT}).`};}
       else if(res.ok){const j=(await res.json()).result;
         if(j&&j.latitude!=null)return{ll:[j.latitude,j.longitude],level:full?"postcode":"district",label:full?(j.postcode||r):(j.outcode||p)};}
     }catch(e){/* offline or blocked: use bundled table */}
@@ -203,11 +204,11 @@ function lookupLocal(raw){const r=raw.toUpperCase().trim().replace(/\s+/g," ");c
   if(/^[A-Z]{1,2}\d[A-Z\d]?\d[A-Z]{2}$/.test(p)){out=p.slice(0,-3);inw=p.slice(-3)}
   else if(r.includes(" ")){[out,inw]=r.split(" ");if(!OUT.test(out)||!/^\d[A-Z]{0,2}$/.test(inw))out=null}
   else if(OUT.test(p))out=p;
-  if(!out)return{err:"That doesn't look like a UK postcode. Try something like LN2 2PE, LN2 2 or LN2."};
+  if(!out)return{err:`That doesn't look like a UK postcode. Try something like ${EX} or ${EXOUT}.`};
   if(inw.length===3&&PCF&&PCF[out+inw])return{ll:PCF[out+inw],level:"postcode",label:out+" "+inw};
   if(inw&&PCS.s[out+" "+inw[0]])return{ll:PCS.s[out+" "+inw[0]],level:inw.length===3?"sector":"exact-sector",label:(out+" "+inw).trim()};
   if(PCS.d[out])return{ll:PCS.d[out],level:"district",label:out};
-  return{err:"We couldn't find that postcode. Check it, or try just the first half (for example LN2)."}}
+  return{err:`We couldn't find that postcode. Check it, or try just the first half (for example ${EXOUT}).`}}
 async function runPc(){pcMsg.className="msg";pcMsg.textContent="Looking up postcode...";const r=await lookup(pcIn.value);
   if(r.err){pcMsg.textContent=r.err+(state.pc?" Still showing results for "+state.pc.label+".":"");pcMsg.className="msg err";return}
   state.pc={ll:r.ll,label:r.label,level:r.level};state.v="";chipsState();

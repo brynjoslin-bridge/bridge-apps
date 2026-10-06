@@ -1,5 +1,5 @@
 {
- "_about": "Each lot is a set of places (centre point and radius in miles). A listing counts as local to a lot if any of its locations falls inside one of the lot's circles. 'include' pulls in another lot's places. 'status': 'draft' shows a note that the area is still being confirmed. Edit this file to change areas; no rebuild needed.",
+ "_about": "Each lot is a set of places (centre point and radius in miles). A listing counts as local to a lot if any of its locations falls inside one of the lot's circles. 'include' pulls in another lot's places. 'status': 'draft' shows a note that the area is still being confirmed. Edit this file to change areas; no rebuild needed. 'examplePostcode' is the hint shown in the postcode box.",
  "lots": {
   "lincoln-north-rural": {
    "name": "Lincoln North Rural",
@@ -109,7 +109,8 @@
      "ln": -0.68756,
      "r": 0.8
     }
-   ]
+   ],
+   "examplePostcode": "LN2 2NR"
   },
   "lincoln-north": {
    "name": "Lincoln North",
@@ -138,7 +139,8 @@
      "ln": -0.539,
      "r": 0.5
     }
-   ]
+   ],
+   "examplePostcode": "LN2 2ER"
   },
   "lincoln-city": {
    "name": "Lincoln City",
@@ -152,7 +154,8 @@
      "ln": -0.548,
      "r": 2.6
     }
-   ]
+   ],
+   "examplePostcode": "LN2 1HN"
   },
   "south-lincoln": {
    "name": "South Lincoln",
@@ -238,7 +241,8 @@
      "ln": -0.4229,
      "r": 0.6
     }
-   ]
+   ],
+   "examplePostcode": "LN5 9RJ"
   },
   "sleaford": {
    "name": "Sleaford",
@@ -300,7 +304,8 @@
      "ln": -0.4782,
      "r": 0.5
     }
-   ]
+   ],
+   "examplePostcode": "NG34 7SA"
   }
  }
 }
