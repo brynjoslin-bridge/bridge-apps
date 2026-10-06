@@ -1,0 +1,66 @@
+{
+  "_about": "Bridge category tree for the finder. Every level has at most 7 choices. A group has 'children'; a leaf lists the H.A.Y. categories ('hay') that sit inside it. A H.A.Y. category can appear in more than one leaf. Categories with no listings are hidden automatically.",
+  "children": [
+    {"name": "Get active", "children": [
+      {"name": "Sports", "hay": ["Sports"]},
+      {"name": "Fitness, gyms and swimming", "hay": ["Fitness, Gyms & Swimming"]},
+      {"name": "Yoga, Pilates and mindfulness", "hay": ["Yoga, Pilates & Mindfulness"]},
+      {"name": "Outdoors and nature", "hay": ["Outdoor Spaces"]}
+    ]},
+    {"name": "Meet people", "children": [
+      {"name": "Befriending and social groups", "hay": ["Befriending & Social Support"]},
+      {"name": "Community cafes", "hay": ["Community Cafes"]},
+      {"name": "Someone to talk to", "hay": ["Talking"]},
+      {"name": "Volunteering", "hay": ["Volunteering Opportunities"]},
+      {"name": "Faith-based groups", "hay": ["Faith-based Support"]}
+    ]},
+    {"name": "Learn and create", "children": [
+      {"name": "Arts and crafts", "hay": ["Arts & Creative Activities"]},
+      {"name": "Music", "hay": ["Music"]},
+      {"name": "Learning and courses", "hay": ["Learning"]},
+      {"name": "Libraries and museums", "hay": ["Libraries & Museums", "Museums & Libraries"]},
+      {"name": "Online activities", "hay": ["Live Online Activities"]},
+      {"name": "Digital skills", "hay": ["Digital Support"]},
+      {"name": "Activities in other languages", "hay": ["Activities in Other Languages"]}
+    ]},
+    {"name": "Mental health and wellbeing", "children": [
+      {"name": "Wellbeing hubs", "hay": ["Wellbeing Hubs"]},
+      {"name": "Night Light Cafes", "hay": ["Night Light Cafés"]},
+      {"name": "Online mental health support", "hay": ["Mental Health - online support"]},
+      {"name": "Bereavement", "hay": ["Bereavement Services"]},
+      {"name": "Drugs and alcohol", "hay": ["Drug & Alcohol Services"]}
+    ]},
+    {"name": "Health and care", "children": [
+      {"name": "GP practices", "hay": ["GP Practices"]},
+      {"name": "Long-term conditions", "hay": ["Long-term Health Conditions", "Physical Health Support"]},
+      {"name": "Carers", "hay": ["Carer Support"]},
+      {"name": "Dementia", "hay": ["Dementia Friendly Communities"]},
+      {"name": "Autism, ADHD and learning disability", "children": [
+        {"name": "Autism and ADHD", "hay": ["Autism Support", "Autism/ADHD Support"]},
+        {"name": "Learning disability", "hay": ["Learning Disabilities Support"]}
+      ]}
+    ]},
+    {"name": "Practical help", "children": [
+      {"name": "Money, food and housing", "children": [
+        {"name": "Food banks and food support", "hay": ["Foodbanks"]},
+        {"name": "Housing and money advice", "hay": ["Housing", "Housing, Finance, Training"]}
+      ]},
+      {"name": "Work and employment", "hay": ["Employment Advice/Support"]},
+      {"name": "Advocacy", "hay": ["Advocacy"]},
+      {"name": "Domestic and sexual abuse", "hay": ["Domestic & Sexual Abuse"]},
+      {"name": "Settling in the UK", "hay": ["Making a Life in the UK"]}
+    ]},
+    {"name": "For particular groups", "children": [
+      {"name": "Children and young people", "children": [
+        {"name": "Youth activities", "hay": ["Youth Activities"]},
+        {"name": "Support for children and young people", "hay": ["Children & Young Adult Support"]}
+      ]},
+      {"name": "Parents and little ones", "hay": ["Parent & Child Activities"]},
+      {"name": "Older people", "hay": ["Older People's Support"]},
+      {"name": "Men", "hay": ["Men's Wellbeing Support", "Men/Women's Wellbeing"]},
+      {"name": "Women", "hay": ["Women's Wellbeing Support", "Men/Women's Wellbeing"]},
+      {"name": "LGBTQ+", "hay": ["LGBT Services"]},
+      {"name": "Armed forces community", "hay": ["Armed Forces", "Armed Forces Support"]}
+    ]}
+  ]
+}

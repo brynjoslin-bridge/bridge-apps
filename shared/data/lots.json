@@ -1,0 +1,306 @@
+{
+ "_about": "Each lot is a set of places (centre point and radius in miles). A listing counts as local to a lot if any of its locations falls inside one of the lot's circles. 'include' pulls in another lot's places. 'status': 'draft' shows a note that the area is still being confirmed. Edit this file to change areas; no rebuild needed.",
+ "lots": {
+  "lincoln-north-rural": {
+   "name": "Lincoln North Rural",
+   "short": "North Rural",
+   "area": "the North Rural villages",
+   "status": "live",
+   "places": [
+    {
+     "n": "Cherry Willingham",
+     "la": 53.23993,
+     "ln": -0.45651,
+     "r": 1.0
+    },
+    {
+     "n": "Reepham",
+     "la": 53.25108,
+     "ln": -0.44401,
+     "r": 0.8
+    },
+    {
+     "n": "Fiskerton",
+     "la": 53.23423,
+     "ln": -0.42944,
+     "r": 0.8
+    },
+    {
+     "n": "Nettleham",
+     "la": 53.26585,
+     "ln": -0.48886,
+     "r": 1.0
+    },
+    {
+     "n": "Sudbrooke",
+     "la": 53.27241,
+     "ln": -0.45081,
+     "r": 0.8
+    },
+    {
+     "n": "Scothern",
+     "la": 53.28377,
+     "ln": -0.44959,
+     "r": 0.8
+    },
+    {
+     "n": "Welton",
+     "la": 53.30614,
+     "ln": -0.48423,
+     "r": 1.0
+    },
+    {
+     "n": "Dunholme",
+     "la": 53.30121,
+     "ln": -0.46806,
+     "r": 1.2
+    },
+    {
+     "n": "Scampton",
+     "la": 53.30217,
+     "ln": -0.57671,
+     "r": 0.8
+    },
+    {
+     "n": "Ingham",
+     "la": 53.33969,
+     "ln": -0.57741,
+     "r": 0.8
+    },
+    {
+     "n": "Glentworth",
+     "la": 53.38141,
+     "ln": -0.57912,
+     "r": 0.8
+    },
+    {
+     "n": "Stow",
+     "la": 53.32729,
+     "ln": -0.67443,
+     "r": 0.8
+    },
+    {
+     "n": "Sturton by Stow",
+     "la": 53.31569,
+     "ln": -0.66542,
+     "r": 0.8
+    },
+    {
+     "n": "Normanby by Stow",
+     "la": 53.33418,
+     "ln": -0.67591,
+     "r": 0.8
+    },
+    {
+     "n": "Bransby",
+     "la": 53.2997,
+     "ln": -0.65195,
+     "r": 0.8
+    },
+    {
+     "n": "Coates",
+     "la": 53.33694,
+     "ln": -0.64053,
+     "r": 0.8
+    },
+    {
+     "n": "Willingham by Stow",
+     "la": 53.35063,
+     "ln": -0.68756,
+     "r": 0.8
+    }
+   ]
+  },
+  "lincoln-north": {
+   "name": "Lincoln North",
+   "short": "Lincoln North",
+   "area": "north Lincoln and the North Rural villages",
+   "status": "draft",
+   "include": [
+    "lincoln-north-rural"
+   ],
+   "places": [
+    {
+     "n": "Ermine",
+     "la": 53.2498,
+     "ln": -0.5358,
+     "r": 0.9
+    },
+    {
+     "n": "St Giles",
+     "la": 53.2429,
+     "ln": -0.522,
+     "r": 0.6
+    },
+    {
+     "n": "Uphill Lincoln",
+     "la": 53.238,
+     "ln": -0.539,
+     "r": 0.5
+    }
+   ]
+  },
+  "lincoln-city": {
+   "name": "Lincoln City",
+   "short": "Lincoln",
+   "area": "the City of Lincoln",
+   "status": "draft",
+   "places": [
+    {
+     "n": "Lincoln",
+     "la": 53.229,
+     "ln": -0.548,
+     "r": 2.6
+    }
+   ]
+  },
+  "south-lincoln": {
+   "name": "South Lincoln",
+   "short": "South Lincoln",
+   "area": "the villages south of Lincoln",
+   "status": "draft",
+   "places": [
+    {
+     "n": "Waddington",
+     "la": 53.1662,
+     "ln": -0.542,
+     "r": 1.0
+    },
+    {
+     "n": "Bracebridge Heath",
+     "la": 53.1962,
+     "ln": -0.5346,
+     "r": 0.8
+    },
+    {
+     "n": "Branston",
+     "la": 53.1937,
+     "ln": -0.4721,
+     "r": 0.8
+    },
+    {
+     "n": "Heighington",
+     "la": 53.2123,
+     "ln": -0.4587,
+     "r": 0.6
+    },
+    {
+     "n": "Washingborough",
+     "la": 53.2232,
+     "ln": -0.4747,
+     "r": 0.7
+    },
+    {
+     "n": "Canwick",
+     "la": 53.2137,
+     "ln": -0.5228,
+     "r": 0.5
+    },
+    {
+     "n": "Harmston",
+     "la": 53.149,
+     "ln": -0.5504,
+     "r": 0.6
+    },
+    {
+     "n": "Coleby",
+     "la": 53.1339,
+     "ln": -0.542,
+     "r": 0.6
+    },
+    {
+     "n": "Navenby",
+     "la": 53.1085,
+     "ln": -0.5251,
+     "r": 0.8
+    },
+    {
+     "n": "Metheringham",
+     "la": 53.1393,
+     "ln": -0.4035,
+     "r": 0.8
+    },
+    {
+     "n": "Nocton",
+     "la": 53.1659,
+     "ln": -0.4194,
+     "r": 0.6
+    },
+    {
+     "n": "Dunston",
+     "la": 53.1527,
+     "ln": -0.4117,
+     "r": 0.5
+    },
+    {
+     "n": "Potterhanworth",
+     "la": 53.1829,
+     "ln": -0.4229,
+     "r": 0.6
+    }
+   ]
+  },
+  "sleaford": {
+   "name": "Sleaford",
+   "short": "Sleaford",
+   "area": "Sleaford and the surrounding villages",
+   "status": "draft",
+   "places": [
+    {
+     "n": "Sleaford",
+     "la": 52.9994,
+     "ln": -0.4104,
+     "r": 1.6
+    },
+    {
+     "n": "Ruskington",
+     "la": 53.0459,
+     "ln": -0.386,
+     "r": 0.9
+    },
+    {
+     "n": "Heckington",
+     "la": 52.9804,
+     "ln": -0.2995,
+     "r": 0.8
+    },
+    {
+     "n": "Leasingham",
+     "la": 53.0265,
+     "ln": -0.4288,
+     "r": 0.6
+    },
+    {
+     "n": "Cranwell",
+     "la": 53.0368,
+     "ln": -0.462,
+     "r": 0.9
+    },
+    {
+     "n": "Billinghay",
+     "la": 53.0795,
+     "ln": -0.2773,
+     "r": 0.7
+    },
+    {
+     "n": "Kirkby la Thorpe",
+     "la": 52.9972,
+     "ln": -0.3641,
+     "r": 0.5
+    },
+    {
+     "n": "Greylees",
+     "la": 52.9819,
+     "ln": -0.4559,
+     "r": 0.5
+    },
+    {
+     "n": "North Rauceby",
+     "la": 53.0052,
+     "ln": -0.4782,
+     "r": 0.5
+    }
+   ]
+  }
+ }
+}
