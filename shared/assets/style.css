@@ -182,3 +182,5 @@ ol.list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1f
 .lotname{font:700 22px/1.3 var(--sans);color:var(--ink)}
 .lotarea{font-size:14px;color:var(--body)}
 .lotcard .badge{align-self:flex-start;margin-top:4px}
+.copylink{font-size:13px;padding:7px 12px;letter-spacing:.02em;order:9}
+@media(max-width:640px){.copylink{margin-left:0}}

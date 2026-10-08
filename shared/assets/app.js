@@ -81,6 +81,7 @@ APP.innerHTML=`<header class="hero">
 
 <div class="summary" aria-live="polite">
   <span class="count" id="count"></span>
+  <button type="button" class="btn ghost copylink" id="copylink">Copy link to this search</button>
   <div class="freshbar" id="bar" aria-hidden="true"></div>
   <div class="fkey"><span><i style="background:var(--fresh)"></i>Under 6 months</span><span><i style="background:var(--age)"></i>6 to 12 months</span><span><i style="background:var(--stale)"></i>Over a year</span></div>
 </div>
@@ -265,6 +266,7 @@ function render(){
   else rows.sort((a,b)=>(b.local-a.local)||b.o.m.localeCompare(a.o.m));
   drawCats(rows);
   {const cn=NODES[state.cat];if(cn&&cn!==TAX){const keep=rows.filter(r=>inNode(r.o,cn));rows.length=0;rows.push(...keep)}}
+  syncURL();
   // summary
   const n={fresh:0,age:0,stale:0};rows.forEach(r=>n[fresh(r.o.m)]++);const t=rows.length||1;
   const loc=rows.filter(r=>r.local).length;
@@ -298,6 +300,47 @@ map.on("popupopen",e=>{e.popup.getElement().querySelectorAll("button[data-i]").f
 function resetAll(){Object.assign(state,{type:"",cat:"",ls:"",fr:"",cw:true,q:""});
   ["ls","fr"].forEach(i=>document.getElementById(i).value="");document.getElementById("q").value="";document.getElementById("cw").checked=true;
   document.querySelectorAll("#type button").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.v==="")));render()}
-render();
+// ---------- shareable links: every filter is mirrored in the address bar
+const slug=t=>String(t).toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+function catPath(n){const a=[];for(;n&&n!==TAX;n=n.parent)a.unshift(slug(n.name));return a.join("/")}
+function catFromPath(path){let n=TAX;for(const part of path.split("/").filter(Boolean)){const c=(n.children||[]).find(x=>slug(x.name)===part);if(!c)break;n=c}return n===TAX?"":n.id}
+let urlReady=false;
+function syncURL(){
+  if(!urlReady)return;
+  const p=new URLSearchParams(),q=document.getElementById("q").value.trim();
+  if(q)p.set("q",q);
+  if(state.pc){p.set("pc",state.pc.label);p.set("r",document.getElementById("rad").value)}
+  const cn=NODES[state.cat];if(cn&&cn!==TAX)p.set("cat",catPath(cn));
+  if(state.type)p.set("type",state.type==="Activity"?"activities":"support");
+  if(state.ls)p.set("for",state.ls);
+  if(state.fr)p.set("checked",state.fr);
+  if(!state.cw)p.set("countywide","no");
+  const defSort=state.pc?"near":"recent";if(state.sort!==defSort)p.set("sort",state.sort);
+  const qs=p.toString().replace(/%2F/g,"/");
+  history.replaceState(null,"",location.pathname+(qs?"?"+qs:""));
+}
+async function loadFromURL(){
+  const p=new URLSearchParams(location.search);
+  const setSel=(id,v,ok)=>{if(v&&ok(v)){document.getElementById(id).value=v;return v}return ""};
+  if(p.get("q")){document.getElementById("q").value=p.get("q");state.q=p.get("q").trim().toLowerCase()}
+  if(p.get("cat"))state.cat=catFromPath(p.get("cat"));
+  const t=p.get("type");if(t==="activities"||t==="support"){state.type=t==="activities"?"Activity":"Support";
+    document.querySelectorAll("#type button").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.v===state.type)))}
+  state.ls=setSel("ls",p.get("for"),v=>[...document.getElementById("ls").options].some(o=>o.value===v));
+  state.fr=setSel("fr",p.get("checked"),v=>["fresh","notstale","stale"].includes(v));
+  if(p.get("countywide")==="no"){state.cw=false;document.getElementById("cw").checked=false}
+  const sort=["recent","az","near"].includes(p.get("sort"))?p.get("sort"):null;
+  if(p.get("r")&&[...document.getElementById("rad").options].some(o=>o.value===p.get("r")))document.getElementById("rad").value=p.get("r");
+  urlReady=true;
+  if(p.get("pc")){pcIn.value=p.get("pc");await runPc()}
+  if(sort&&!(sort==="near"&&!state.pc)){state.sort=sort;document.getElementById("sort").value=sort}
+  render();
+}
+document.getElementById("copylink").addEventListener("click",async e=>{
+  const b=e.currentTarget,old=b.textContent;
+  try{await navigator.clipboard.writeText(location.href);b.textContent="Link copied"}
+  catch(err){window.prompt("Copy this link:",location.href);}
+  setTimeout(()=>b.textContent=old,1800)});
+loadFromURL();
 
 })();
